@@ -1,5 +1,6 @@
 import threading
 import time
+from datetime import datetime
 
 t_cycle = 60 # ms
 
@@ -12,7 +13,7 @@ class ThreadControl(threading.Thread):
     def run(self):
 
         start_time = datetime.now()
-        self.gui.update()
+        self.control.update()
         end_time = datetime.now()
 
         dt = end_time - start_time

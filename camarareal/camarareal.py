@@ -5,19 +5,20 @@ import Ice
 import signal
 import time
 from PyQt4 import QtGui
-from gui.gui import Gui as g
-from gui.threadgui import ThreadGui as thg
-from control.control import Control as ctrl
-from control.threadcontrol import ThreadControl as thctrl
+from gui.gui import Gui
+from gui.threadgui import ThreadGui
+from control.control import Control
+from control.threadcontrol import ThreadControl
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == '__main__':
 
-    app = QtGui.QApplication(sys.argv)
+    #app = QtGui.QApplication(sys.argv)
+    ice = Ice.initialize()
 
-    control = ctrl.Control()
-    gui = g.Gui()
+    control = Control(ice)
+    gui = Gui()
 
     gui.show()
 
