@@ -1,33 +1,24 @@
-import sys
+import sys, traceback, Ice
 import jderobot
+import numpy as np
 import threading
-import Ice
+import cv2
 
 class Control():
 
     def __init__(self):
-
         self.lock = threading.Lock()
+        self.effectON = 'False'
 
         try:
             ic = Ice.initialize(sys.argv)
             properties = ic.getProperties()
-            basecamera = ic.propertyToProxy("Camarareal.Camera.Proxy")
-            self.cameraProxy = jderobot.CameraPrx.checkedCast(basecamera)
-
+            camera = ic.propertyToProxy("Camarareal.Camera.Proxy")
+            self.cameraProxy = jderobot.CameraPrx.checkedCast(camera)
             if self.cameraProxy:
                 self.image = self.cameraProxy.getImageData("RGB8")
                 self.height= self.image.description.height
                 self.width = self.image.description.width
-
-                self.trackImage = np.zeros((self.height, self.width,3), np.uint8)
-                self.trackImage.shape = self.height, self.width, 3
-
-                self.thresoldImage = np.zeros((self.height, self.width,1), np.uint8)
-                self.thresoldImage.shape = self.height, self.width, 1
-
-                self.filterValues = ColorFilterValues()
-
             else:
                 print 'Interface camera not connected'
 
@@ -37,20 +28,30 @@ class Control():
             status = 1
 
     def update(self):
-        self.lock.acquire()
         if self.cameraProxy:
+            self.lock.acquire()
+            print 'updtcontrol'
             self.image = self.cameraProxy.getImageData("RGB8")
             self.height= self.image.description.height
             self.width = self.image.description.width
-        self.lock.release()
+            self.lock.release()
 
     def getImage(self):
         if self.cameraProxy:
             self.lock.acquire()
-            img = np.zeros((self.height, self.width, 3), np.uint8)
-            img = np.frombuffer(self.image.pixelData, dtype=np.uint8)
-            img.shape = self.height, self.width, 3
+            print 'getimage'
+            image = np.zeros((self.height, self.width, 3), np.uint8)
+            image = np.frombuffer(self.image.pixelData, dtype=np.uint8)
+            image.shape = self.height, self.width, 3
             self.lock.release()
-            return img;
+            if self.effectON:
+                return self.opencvtest(image)
+            else:
+                return image;
 
+    def effect(self):
+        self.effectON = not self.effectON
 
+    def opencvtest(self, img):
+        image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        return image

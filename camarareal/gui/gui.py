@@ -3,36 +3,37 @@
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 import numpy
+import sys
 
-class Gui(QtGui.QMainWindow):
+class Gui(QtGui.QWidget):
 
-    def __init__(self, control):
-        self.control = control
-        self.image = self.control.getImage()
-        self.imageAux = None
+    updGUI=QtCore.pyqtSignal()
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        self.setWindowTitle("CamaraReal")
+        self.imgLabel=QtGui.QLabel(self)
+        self.imgLabel.show()
+        self.updGUI.connect(self.update)
 
-        QtCore.QObject.connect(self, QtCore.SIGNAL('setPixmap()'),
-                               self.setPixmap)
+        TestButton=QtGui.QPushButton("Test")
+        TestButton.resize(40,40)
+        TestButton.setParent(self)
+        TestButton.clicked.connect(self.effect)
 
-    def setPixmap(self):
-        self.imageLabel.setPixmap(QtGui.QPixmap.fromImage(self.imageAux))
+    def setControl(self,control):
+        self.control=control
 
     def update(self):
+        print 'updgui'
+        image = self.control.getImage()
+        if image != None:
+            img = QtGui.QImage(image.data, image.shape[1], image.shape[0], QtGui.QImage.Format_RGB888)
+            size=QtCore.QSize(image.shape[1],image.shape[0])
+            self.imgLabel.resize(size)
+            self.resize(size)
+            self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
+            print 'printimg'
 
-        self.image = self.control.getImage()
+    def effect(self):
+        self.control.effect()
 
-+
-        img = numpy.zeros((self.image.description.height *
-                           self.image.description.width * 3),
-                           dtype=numpy.uint8)
-
-        img = numpy.frombuffer(self.image.pixelData, dtype=numpy.uint8)
-
-        img.shape = (self.image.description.height,
-                     self.image.description.width, 3)
-
-        self.imageAux = QtGui.QImage(img.data, img.shape[1], img.shape[0],
-                                img.shape[1] * img.shape[2],
-                                QtGui.QImage.Format_RGB888)
-
-        self.emit(QtCore.SIGNAL('setPixmap()'))
