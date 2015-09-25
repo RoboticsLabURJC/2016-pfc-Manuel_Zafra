@@ -3,6 +3,7 @@ import jderobot
 import numpy as np
 import threading
 import cv2
+from matplotlib import pyplot as plt
 
 class Control():
 
@@ -43,15 +44,19 @@ class Control():
             image = np.zeros((self.height, self.width, 3), np.uint8)
             image = np.frombuffer(self.image.pixelData, dtype=np.uint8)
             image.shape = self.height, self.width, 3
-            self.lock.release()
             if self.effectON:
-                return self.opencvtest(image)
-            else:
-                return image;
+                image = self.opencvtest(image)
+            self.lock.release()
+            return image;
 
     def effect(self):
         self.effectON = not self.effectON
 
     def opencvtest(self, img):
-        image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        return image
+        edges = cv2.Canny(img,100,200)
+        return edges;
+
+
+
+        #image = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        #return image
