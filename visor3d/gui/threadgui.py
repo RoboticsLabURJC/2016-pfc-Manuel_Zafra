@@ -17,7 +17,7 @@ class ThreadGui(threading.Thread):
         while(True):
 
             start_time = datetime.now()
-            self.gui.updGUI.emit()
+            self.gui.update()
             end_time = datetime.now()
 
             dt = end_time - start_time

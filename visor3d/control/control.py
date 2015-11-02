@@ -9,26 +9,39 @@ class Control():
 
     def __init__(self):
         self.lock = threading.Lock()
-        self.img = np.zeros((350,350,3), np.uint8)
-        cv2.line(self.img,(0,0),(200,200),(255,0,0),1)
-        #self.drawAxis()
+        try:
+            ic = Ice.initialize(sys.argv)
+            properties = ic.getProperties()
+            basepose3D = ic.propertyToProxy("Visor3D.Pose3D.Proxy")
+            self.pose3DProxy=jderobot.Pose3DPrx.checkedCast(basepose3D)
+            if self.pose3DProxy:
+                self.pose=jderobot.Pose3DData()
+            else:
+                print 'Interface pose3D not connected'
 
-    def 3dto2d(self, x, y ,z):
-        point =
-        return point
+        except:
+            traceback.print_exc()
+	    exit()
+            status = 1
 
     def update(self):
-        self.lock.acquire()
-        print 'updtcontrol'
-        self.lock.release()
+        print 'updcontrol'
+        if self.pose3DProxy:
+            print 'updlockon'
+            self.lock.acquire()
+            self.pose=self.pose3DProxy.getPose3DData()
+            self.lock.release()
+            print 'updlockoff'
+    def getPose3D(self):
+        if self.pose3DProxy:
+            print 'getlockon'
+            self.lock.acquire()
+            tmp=self.pose
+            self.lock.release()
+            print 'getlockoff'
+            return tmp
 
-    def getImage(self):
-        self.lock.acquire()
-        print 'getimg'
-        self.lock.release()
-        return self.img
-
-    def drawAxis(self):
-        cv2.line(self.img,(0,0),(0,0),(255,0,0),5)
-        cv2.line(self.img,(0,0),(70,0),(0,255,0),5)
-        cv2.line(self.img,(0,0),(0,70),(0,0,255),5)
+    def getRoute(self):
+        #self.lock.acquire()
+        print 'getroute'
+        #self.lock.release()
