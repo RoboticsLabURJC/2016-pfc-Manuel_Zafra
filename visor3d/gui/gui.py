@@ -34,7 +34,6 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
-        self.marcador = 0
         self.pose3d = None
 
     def setPose3D(self, pose3d):
@@ -99,7 +98,6 @@ class GLWidget(QtOpenGL.QGLWidget):
             glEnd()
 
     def drone(self):
-        self.marcador = self.marcador + 0.5
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
         glColor3f(0.9, 0.9, 0.9)
