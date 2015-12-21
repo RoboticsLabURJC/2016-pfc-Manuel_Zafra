@@ -35,6 +35,8 @@ class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         self.pose3d = None
+        self.buffer_max = 150
+        self.trailbuff = RingBuffer(self.buffer_max)
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
@@ -42,6 +44,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.dX = 2*pose3d.x
             self.dY = 2*pose3d.y
             self.dZ = 2*pose3d.z
+            self.trailbuff.append(self.pose3d)
 
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -49,6 +52,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.floor()
         if self.pose3d != None :
             self.drone()
+        self.trail()
         self.swapBuffers()
 
     def initializeGL(self):
@@ -98,6 +102,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             glEnd()
 
     def drone(self):
+        #Draws drone position
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
         glColor3f(0.9, 0.9, 0.9)
@@ -108,4 +113,51 @@ class GLWidget(QtOpenGL.QGLWidget):
         glVertex(0,0,0)
         glEnd()
         glPopMatrix();
+
+    def trail(self):
+        #Draws drone's movement trail
+        #print 'trail'
+        for x in range(1,self.trailbuff.getlen()-1):
+            self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
+
+    def drawTrailLine(self, poseA, poseB):
+        #Draws line between two given pose3D data structures
+        glLineWidth(1)
+        glColor3f(0.4, 0.8, 0.4)
+        glBegin(GL_LINES)
+        glVertex3f(poseA.x*2, poseA.y*2, poseA.z*2)
+        glVertex3f(poseB.x*2, poseB.y*2, poseB.z*2)
+        glEnd()
+
+
+
+class RingBuffer:
+    #Class that implements a not-yet-full buffer
+    def __init__(self,size_max):
+        self.max = size_max
+        self.data = []
+
+    class __Full:
+        #Class that implements a full buffer
+        def append(self, x):
+            self.data[self.cur] = x
+            self.cur = (self.cur+1) % self.max
+        def get(self,x):
+            return self.data[(self.cur+x) % self.max]
+        def getlen(self):
+            return self.max
+
+    def append(self,x):
+        self.data.append(x)
+        if len(self.data) == self.max:
+            self.cur = 0
+            # Permanently change self's class from non-full to full
+            self.__class__ = self.__Full
+
+    def get(self,x):
+        #Return data in the given position
+        return self.data[x]
+
+    def getlen(self):
+        return len(self.data)
 

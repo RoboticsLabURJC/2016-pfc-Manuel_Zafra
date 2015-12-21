@@ -25,20 +25,15 @@ class Control():
             status = 1
 
     def update(self):
-        print 'updcontrol'
         if self.pose3DProxy:
-            print 'updlockon'
             self.lock.acquire()
             self.pose=self.pose3DProxy.getPose3DData()
             self.lock.release()
-            print 'updlockoff'
     def getPose3D(self):
         if self.pose3DProxy:
-            print 'getlockon'
             self.lock.acquire()
             tmp=self.pose
             self.lock.release()
-            print 'getlockoff'
             return tmp
 
     def getRoute(self):
