@@ -1,0 +1,18 @@
+2016-1-20_16:37:47 [INFO] Logger:: screenLevel=0 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:37:47 Cameras to load: 0
+2016-1-20_16:38:21 [INFO] Logger:: screenLevel=0 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:38:21 Cameras to load: 0
+2016-1-20_16:40:1 [INFO] Logger:: screenLevel=0 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:40:1 Cameras to load: 0
+2016-1-20_16:42:23 [INFO] Logger:: screenLevel=0 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:42:23 Cameras to load: 0
+2016-1-20_16:44:31 [INFO] Logger:: screenLevel=1 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:44:31 Cameras to load: 0
+2016-1-20_16:48:27 [INFO] Logger:: screenLevel=1 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:48:27 Cameras to load: 0
+2016-1-20_16:51:35 [INFO] Logger:: screenLevel=1 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:51:35 Cameras to load: 0
+2016-1-20_16:52:38 --------------REINICIO
+2016-1-20_16:57:54 [INFO] Logger:: screenLevel=1 logLevel=0 LogFile=./log/Replayer.txt
+2016-1-20_16:57:54 Cameras to load: 0
+2016-1-20_16:58:58 --------------REINICIO

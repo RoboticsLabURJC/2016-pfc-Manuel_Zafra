@@ -7,6 +7,7 @@ from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 import math
 import sys
+import pickle
 
 
 class Gui(QtGui.QWidget):
@@ -27,16 +28,17 @@ class Gui(QtGui.QWidget):
     def update(self):
         pose3d = self.control.getPose3D()
         self.glWidget.setPose3D(pose3d)
+        route = self.control.getRoute()
+        self.glWidget.setRoute(route)
         self.glWidget.update()
-        print 'updgui'
 
 class GLWidget(QtOpenGL.QGLWidget):
 
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         self.pose3d = None
-        self.buffer_max = 150
-        self.trailbuff = RingBuffer(self.buffer_max)
+        self.trailbuff = RingBuffer(150)
+        self.routbuff = RingBuffer(250)
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
@@ -46,6 +48,10 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.dZ = 2*pose3d.z
             self.trailbuff.append(self.pose3d)
 
+    def setRoute(self, pose3d):
+        if pose3d != None :
+            self.routbuff.append(pose3d)
+
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         self.axis()
@@ -53,6 +59,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         if self.pose3d != None :
             self.drone()
         self.trail()
+        self.route()
         self.swapBuffers()
 
     def initializeGL(self):
@@ -116,14 +123,20 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def trail(self):
         #Draws drone's movement trail
-        #print 'trail'
+        glLineWidth(1)
+        glColor3f(0.2, 0.5, 0.2)
         for x in range(1,self.trailbuff.getlen()-1):
             self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
 
+    def route(self):
+        #Draws drone's path
+        glLineWidth(1)
+        glColor3f(0.7, 0.3, 0.3)
+        for x in range(1,self.routbuff.getlen()-1):
+            self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
+
     def drawTrailLine(self, poseA, poseB):
         #Draws line between two given pose3D data structures
-        glLineWidth(1)
-        glColor3f(0.4, 0.8, 0.4)
         glBegin(GL_LINES)
         glVertex3f(poseA.x*2, poseA.y*2, poseA.z*2)
         glVertex3f(poseB.x*2, poseB.y*2, poseB.z*2)
