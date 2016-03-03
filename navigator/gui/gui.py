@@ -160,14 +160,22 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def drone(self):
         #Draws drone position
+        yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,self.pose3d.q2,self.pose3d.q3)
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
+        glRotatef(yaw,0,0,1)
         glColor3f(0.9, 0.9, 0.9)
         c = gluNewQuadric()
         gluCylinder(c,1.3,1.3,0.7,6,4)
         glPointSize(4)
         glBegin(GL_POINTS)
         glVertex(0,0,0)
+        glEnd()
+        glColor3f(0.9, 0.2, 0.2)
+        glLineWidth(2.5)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0.3)
+        glVertex3f(2, 0, 0.3)
         glEnd()
         glPopMatrix();
 
@@ -204,6 +212,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         glVertex3f(poseA.x*2, poseA.y*2, poseA.z*2)
         glVertex3f(poseB.x*2, poseB.y*2, poseB.z*2)
         glEnd()
+
+    def qtoyaw(self, q0,q1,q2,q3):
+        #Transforms quaternions to (yaw,pitch,roll)
+        yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
+        return math.degrees(yaw)  #[degrees]
 
 
 

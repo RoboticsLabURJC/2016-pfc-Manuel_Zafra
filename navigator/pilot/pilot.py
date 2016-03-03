@@ -44,7 +44,7 @@ class Pilot():
         """
 
 
-
+        d = self.distance(pose3d)
 
         (px,py,pz) = self.path
 
@@ -87,7 +87,7 @@ class Pilot():
         print ' yaw = %f' %yaw
         print ' - - - - - - - - - - -'
 
-        self.interface.sendCMDVel(ux, 0, 0, uw)
+        self.interface.sendCMDVel(0, 0, 0, 0.3)
 
 
     def setVel(self, v, w):
