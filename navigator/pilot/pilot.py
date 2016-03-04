@@ -8,7 +8,7 @@ class Pilot():
 
     def __init__(self, interface):
         self.step = 0
-        self.setVel(0.2,0.3)
+        self.setVel(0.3,0.3)
         self.interface = interface
         self.path = self.interface.getPath(0)
         self.navState = 0
@@ -59,7 +59,7 @@ class Pilot():
 
         if px < pose3d.x:
             if py > pose3d.y:
-                alpha = 180 + alpha
+                alpha = 90 + alpha #180
             else:
                 alpha = (180 - alpha)*(-1)
 
@@ -87,7 +87,10 @@ class Pilot():
         print ' yaw = %f' %yaw
         print ' - - - - - - - - - - -'
 
-        self.interface.sendCMDVel(0, 0, 0, 0.3)
+        if d < 0.1 :
+            self.interface.sendCMDVel(ux, uy, uz, 0)
+        else:
+            self.interface.sendCMDVel(ux, 0, uz, uw)
 
 
     def setVel(self, v, w):
@@ -117,28 +120,30 @@ class Pilot():
 
     def angularDirection(self, yaw, alpha):
         #Calculates angular direction
-        #Clockwise = (-1)
-        #Anticlockwise = 1
+        #Clockwise = 1
+        #Anticlockwise = -1
         yaw_d = 0
-        if (((alpha >= 0) and (yaw >= 0)) or ((alpha < 0) and (yaw < 0))):
+        if (((alpha >= 0.0) and (yaw >= 0.0)) or ((alpha < 0.0) and (yaw < 0.0))):
         # alpha+ yaw+ | alpha- yaw-
-            if alpha > yaw :
-                yaw_d = 1   #turn left
+            if (abs(alpha) - abs(yaw)) < 0.2 :
+                yaw_d = 0
+            elif alpha > yaw :
+                yaw_d = -1   #turn left
             else:
-                yaw_d = -1  #turn right
+                yaw_d = 1  #turn right
         else:
-            if (alpha < 0):
+            if (alpha < 0.0):
             #alpha- yaw+
                 if ((math.pi - abs(alpha)) > yaw) :
-                    yaw_d = 1   #turn left
+                    yaw_d = -1   #turn left
                 else:
-                    yaw_d = -1  #turn right
+                    yaw_d = 1  #turn right
             else:
             #alpha+ yaw-
                 if ((math.pi - abs(yaw)) > alpha) :
-                    yaw_d = 1  #turn right
+                    yaw_d = -1  #turn left
                 else:
-                    yaw_d = -1   #turn left
+                    yaw_d = 1   #turn right
         return yaw_d
 
     def qtoyaw(self, q0,q1,q2,q3):
@@ -149,5 +154,5 @@ class Pilot():
     def distance(self, pose3d):
         #Distance between drone position and next point
         (a,b,c) = self.path
-        d = math.sqrt((pose3d.x - a)**2 + (pose3d.y - b)**2)# + (pose3d.z - c)**2)
+        d = math.sqrt((pose3d.x - a)**2 + (pose3d.y - b)**2 + (pose3d.z - c)**2)
         return d
