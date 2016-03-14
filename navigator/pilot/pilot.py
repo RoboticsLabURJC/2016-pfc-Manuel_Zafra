@@ -8,6 +8,7 @@ class Pilot():
 
     def __init__(self, interface):
         self.step = 0
+        self.angDiff = 0
         self.setVel(0.3,0.3)
         self.interface = interface
         self.path = self.interface.getPath(0)
@@ -20,29 +21,11 @@ class Pilot():
 
     def update(self):
         pose3d = self.interface.getPose3D()
-
-        if self.distance(pose3d) < 0.1:
-            self.step += 1
-
-        #self.checkState(d)
-        print 'STEP : %i' %self.step
         self.path = self.interface.getPath(self.step)
-
         self.pilot(pose3d)
 
     def pilot(self, pose3d):
         #Calculates drone's movement command
-
-        """
-        self.checkState(d)
-    
-        if self.navState = 0 :
-
-        elif self.navState = 1 :
-
-        elif self.navState = 2 :
-        """
-
 
         d = self.distance(pose3d)
 
@@ -51,9 +34,6 @@ class Pilot():
         ux = (px - pose3d.x) / d
         uy = (py - pose3d.y) / d
         uz = (pz - pose3d.z) / d
-
-        if ux < 0.0001:
-            ux = 0.0001
 
         alpha = math.degrees(math.atan(uy / ux))
 
@@ -68,55 +48,66 @@ class Pilot():
 
         yaw_d = self.angularDirection(yaw, alpha)
 
+        if self.navState == 0:
+            #0.2 = 11degrees
+            if self.angDiff >= 0.2 :
+                self.setVel(0.2, 0.5)
+            else: #self.angDiff < 0.2
+                self.setVel(0.3, 0.3)
+                self.navState = 1
+            uy = 0.0
+            ux = abs(ux)
+
+        elif self.navState == 1:
+            if d >= 0.3 :
+                uy = 0.0
+                ux = abs(ux)
+                if self.angDiff <= 0.05 :
+                    self.setVel(0.5, 0.01)
+                else:
+                    self.setVel(0.5, 0.2)
+            else:
+                self.setVel(0.15, 0.0)
+                self.navState = 2
+
+        elif self.navState == 2:
+            if d < 0.07:
+                self.step += 1
+                self.navState = 0
+                self.setVel(0.05, 0.0)
+            else:
+                self.setVel(0.1, 0.0)
+            yaw_d = 0.0
+
         uy = uy * self.Vel
         ux = ux * self.Vel
         uz = uz * self.Vel
         uw = yaw_d * self.AngVel
 
-        #print ' d = %f' %d
+        self.interface.sendCMDVel(ux, uy, uz, uw)
+        #self.interface.sendCMDVel(0, 0, 0, 0)
+
+        print 'STEP : %i' %self.step
+        print 'State : %i' %self.navState
+        print ' d = %f' %d
         #print ' Pz = %f' %pz        
         #print ' Px = %f' %px
         #print ' X = %f' %pose3d.x
-        #print ' q0 = %f' %pose3d.q0
-        #print ' q1 = %f' %pose3d.q1
-        #print ' q2 = %f' %pose3d.q2
-        #print ' q3 = %f' %pose3d.q3
-        print ' Ux = %f' %ux
+        print ' U(x,y,z) = (%f, %f, %f)' %(ux, uy, uz)
         print ' Uw = %f' %uw
-        print ' Alpha = %f' %alpha
-        print ' yaw = %f' %yaw
+        #print ' Alpha = %f' %alpha
+        #print ' yaw = %f' %yaw
         print ' - - - - - - - - - - -'
-
-        if d < 0.1 :
-            self.interface.sendCMDVel(ux, uy, uz, 0)
-        else:
-            self.interface.sendCMDVel(ux, 0, uz, uw)
-
 
     def setVel(self, v, w):
         self.Vel = v
         self.AngVel = w
 
-    """
-    def checkState(self, d):
+    def setAngVel(self, w):
+        self.AngVel = w
 
-        if d < 0.1:
-            self.step += 1
-            self.navState = 0
-        else:
-            
-
-        if self.navState = 0 :#start
-            if self.startCount < 10:
-                self.startCount += 1
-            else:
-                self.navState = 1
-        elif self.navState = 1 :#movement
-
-        elif self.navState = 2 :#closetopoint
-    """
-
-
+    def setLinVel(self, v):
+        self.Vel = v
 
     def angularDirection(self, yaw, alpha):
         #Calculates angular direction
@@ -125,25 +116,29 @@ class Pilot():
         yaw_d = 0
         if (((alpha >= 0.0) and (yaw >= 0.0)) or ((alpha < 0.0) and (yaw < 0.0))):
         # alpha+ yaw+ | alpha- yaw-
-            if (abs(alpha) - abs(yaw)) < 0.2 :
-                yaw_d = 0
-            elif alpha > yaw :
-                yaw_d = -1   #turn left
+            if alpha > yaw :
+                yaw_d = 1   #turn left
+                self.angDiff = alpha - yaw
             else:
-                yaw_d = 1  #turn right
+                yaw_d = -1  #turn right
+                self.angDiff = yaw - alpha
         else:
             if (alpha < 0.0):
             #alpha- yaw+
                 if ((math.pi - abs(alpha)) > yaw) :
+                    self.angDiff = abs(alpha) + yaw
                     yaw_d = -1   #turn left
                 else:
+                    self.angDiff = 2*math.pi + alpha - yaw
                     yaw_d = 1  #turn right
             else:
             #alpha+ yaw-
                 if ((math.pi - abs(yaw)) > alpha) :
-                    yaw_d = -1  #turn left
+                    self.angDiff = abs(yaw) + alpha
+                    yaw_d = 1  #turn left
                 else:
-                    yaw_d = 1   #turn right
+                    self.angDiff = 2*math.pi + yaw - alpha
+                    yaw_d = -1   #turn right
         return yaw_d
 
     def qtoyaw(self, q0,q1,q2,q3):

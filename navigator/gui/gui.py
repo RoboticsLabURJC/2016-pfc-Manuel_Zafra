@@ -16,18 +16,24 @@ class Gui(QtGui.QWidget):
         super(Gui, self).__init__()
 
         self.setWindowTitle('Drone Navigator')
-        self.setMinimumSize(730,420)
-        self.setMaximumSize(730,420)
+        self.setMinimumSize(780,470)
+        self.setMaximumSize(780,470)
 
-        changeCam = QtGui.QPushButton("Change Camera")
-        changeCam.setMinimumSize(250,40)
-        changeCam.setMaximumSize(250,40)
-        changeCam.setParent(self)
-        changeCam.clicked.connect(self.changeCamera)
+        self.changeCam = QtGui.QPushButton("Change Camera")
+        self.changeCam.setMinimumSize(250,40)
+        self.changeCam.setMaximumSize(250,40)
+        self.changeCam.setParent(self)
+        self.changeCam.clicked.connect(self.changeCamera)
+
+        self.posText = QtGui.QLabel(self)
+        self.posText.setMinimumSize(250,100)
+        self.posText.setMaximumSize(250,100)
+        self.posText.show()
 
         self.glWidget = GLWidget()
-        self.glWidget.setMinimumSize(400,400)
-        self.glWidget.setMaximumSize(400,400)
+        self.glWidget.setMinimumSize(450,450)
+        self.glWidget.setMaximumSize(450,450)
+        self.glWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self.imgLabel=QtGui.QLabel(self)
         self.imgLabel.setMinimumSize(250,250)
@@ -39,7 +45,9 @@ class Gui(QtGui.QWidget):
         VLayout.addStretch(1)
         VLayout.addWidget(self.imgLabel)
         VLayout.addStretch(1)
-        VLayout.addWidget(changeCam)
+        VLayout.addWidget(self.changeCam)
+        VLayout.addStretch(1)
+        VLayout.addWidget(self.posText)
         VLayout.addStretch(1)
 
         HLayout = QtGui.QHBoxLayout()
@@ -67,6 +75,8 @@ class Gui(QtGui.QWidget):
         image = self.interface.getImage()
         if image != None:
             self.emit(QtCore.SIGNAL("NewImg"), image)
+        self.posText.setText("Position: \n(%f, %f, %f)"
+            %(pose3d.x, pose3d.y, pose3d.z))
 
     def update_img(self, image):
         img = QtGui.QImage(image.data, image.shape[1], image.shape[0], QtGui.QImage.Format_RGB888)
@@ -87,6 +97,12 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.trailbuff = RingBuffer(150)
         #self.routbuff = RingBuffer(250)
         self.routbuff = []
+        self.view_d = 40.0
+        self.view_ang = math.radians(60.0)
+        self.eyex = self.view_d * math.sin(self.view_ang)
+        self.eyey = 0.0
+        self.eyez = abs(self.view_d * math.cos(self.view_ang))
+        self.rot = 20.0 #degrees
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
@@ -103,6 +119,11 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+        glLoadIdentity()
+        gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,5, 0,0,1)
+        glRotatef( self.rot, 0, 0, 1 )
+
         self.axis()
         self.floor()
         if self.pose3d != None :
@@ -116,18 +137,16 @@ class GLWidget(QtOpenGL.QGLWidget):
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glEnable(GL_DEPTH_TEST)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    def resizeGL(self, w, h):
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective( 60, 1, 1, 1000 )
-        glMatrixMode( GL_MODELVIEW )
-        gluLookAt( 30,30,40, 0,0,5, 0,0,1)
-        glRotatef( 20, 0, 0, 1 )
+        glMatrixMode(GL_MODELVIEW)
+        gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,5, 0,0,1)
+        glRotatef( self.rot, 0, 0, 1 )
 
     def axis(self):
         #Draws 3d axis
-        glLineWidth(2)
+        glLineWidth(1)
         glColor3f(1.0, 0.0, 0.0)
         glBegin(GL_LINES)
         glVertex3f(0, 0, 0)
@@ -146,7 +165,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def floor(self):
         #Draws floor grid
-        glLineWidth(1)
+        glLineWidth(0.5)
         glColor3f(0.2, 0.2, 0.2)
         for x in range(-10,11):
             glBegin(GL_LINES)
@@ -166,10 +185,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         glRotatef(yaw,0,0,1)
         glColor3f(0.9, 0.9, 0.9)
         c = gluNewQuadric()
-        gluCylinder(c,1.3,1.3,0.7,6,4)
-        glPointSize(4)
+        gluCylinder(c,1.3,1.3,0.5,8,2)
+        glPointSize(6)
         glBegin(GL_POINTS)
-        glVertex(0,0,0)
+        glVertex(0,0,0.3)
         glEnd()
         glColor3f(0.9, 0.2, 0.2)
         glLineWidth(2.5)
@@ -193,7 +212,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         #for x in range(1,self.routbuff.getlen()-1):
         #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
         glColor3f(0.7, 0.3, 0.3)
-        glPointSize(4)
+        glPointSize(2)
         (xx, yy, zz) = self.routbuff[0]
 
         for (x,y,z) in self.routbuff:
@@ -217,6 +236,32 @@ class GLWidget(QtOpenGL.QGLWidget):
         #Transforms quaternions to (yaw,pitch,roll)
         yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
         return math.degrees(yaw)  #[degrees]
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Right :
+            self.rot -= 2
+        elif e.key() == QtCore.Qt.Key_Left :
+            self.rot += 2
+        elif e.key() == QtCore.Qt.Key_Up :
+            self.view_ang -= math.radians(0.7)
+            if self.view_ang > math.radians(90):
+                self.view_ang = math.radians(90)
+            self.eyex = self.view_d * math.sin(self.view_ang)
+            self.eyez = abs(self.view_d * math.cos(self.view_ang))
+        elif e.key() == QtCore.Qt.Key_Down :
+            self.view_ang += math.radians(0.7)
+            if self.view_ang < 0.0:
+                self.view_ang = 0.0
+            self.eyex = self.view_d * math.sin(self.view_ang)
+            self.eyez = abs(self.view_d * math.cos(self.view_ang))
+
+    def wheelEvent(self, e):
+        if e.delta() > 0 :
+            self.view_d -= 1
+        elif e.delta() < 0 :
+            self.view_d += 1
+        self.eyex = self.view_d * math.sin(self.view_ang)
+        self.eyez = abs(self.view_d * math.cos(self.view_ang))
 
 
 
