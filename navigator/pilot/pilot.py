@@ -48,36 +48,52 @@ class Pilot():
 
         yaw_d = self.angularDirection(yaw, alpha)
 
+        
         if self.navState == 0:
             #0.2 = 11degrees
             if self.angDiff >= 0.2 :
-                self.setVel(0.2, 0.5)
+                self.setVel(0.1, 0.5)
             else: #self.angDiff < 0.2
-                self.setVel(0.3, 0.3)
+                self.setVel(0.2, 0.3)
                 self.navState = 1
-            uy = 0.0
             ux = abs(ux)
+            ux += abs(uy)
+            uy = 0.0
 
         elif self.navState == 1:
             if d >= 0.3 :
-                uy = 0.0
                 ux = abs(ux)
+                ux += abs(uy)
+                uy = 0.0
                 if self.angDiff <= 0.05 :
-                    self.setVel(0.5, 0.01)
+                    self.setVel(0.2, 0.01)
                 else:
-                    self.setVel(0.5, 0.2)
+                    self.setVel(0.2, 0.2)
             else:
                 self.setVel(0.15, 0.0)
                 self.navState = 2
 
         elif self.navState == 2:
-            if d < 0.07:
+            ux = abs(ux)
+            ux += abs(uy)
+            uy = 0.0
+            if self.angDiff <= 0.05 :
+                self.setVel(0.2, 0.01)
+            else:
+                self.setVel(0.2, 0.2)
+
+            if d < 0.1:
                 self.step += 1
                 self.navState = 0
-                self.setVel(0.05, 0.0)
+        """
+            if d < 0.1:
+                self.step += 1
+                self.navState = 0
+                self.setVel(0.1, 0.0)
             else:
                 self.setVel(0.1, 0.0)
             yaw_d = 0.0
+        """
 
         uy = uy * self.Vel
         ux = ux * self.Vel
