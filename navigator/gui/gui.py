@@ -5,6 +5,7 @@ from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
+from collada import *
 import math
 import sys
 import pickle
@@ -103,6 +104,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.eyey = 0.0
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
         self.rot = 20.0 #degrees
+        self.dronemesh = Collada('gui/quadrotor/quadrotor_2.dae')
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d

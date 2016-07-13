@@ -66,7 +66,7 @@
 <!--  AR_DRONE   -->
 
     <include>
-      <uri>model://ArDrone</uri>
+      <uri>model://ArDrone2</uri>
       <pose>-6 -3 0.5 0 0 0</pose>
     </include>  
 
@@ -93,7 +93,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00000</name>
             </script>
           </material>
@@ -122,7 +122,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00001</name>
             </script>
           </material>
@@ -151,7 +151,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00002</name>
             </script>
           </material>
@@ -180,7 +180,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00003</name>
             </script>
           </material>
@@ -209,7 +209,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00004</name>
             </script>
           </material>
@@ -238,7 +238,7 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00005</name>
             </script>
           </material>
@@ -267,8 +267,182 @@
           </geometry>
           <material>
             <script>
-              <uri>file://materials/scripts/tags.material</uri>
+              <uri>file://tags_material/scripts/tags.material</uri>
               <name>Tag36_11_00006</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_7'>
+      <pose>0.296000 -2.487000 1.650000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.020000 0.300000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.020000 0.300000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00007</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_8'>
+      <pose>0.294000 -5.820000 1.872000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.020000 0.300000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.020000 0.300000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00008</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_9'>
+      <pose>-1.435000 -8.478000 1.800000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00009</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_10'>
+      <pose>-1.614000 -4.29500 1.800000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00010</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_11'>
+      <pose>-0.940000 -4.096000 1.700000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00011</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_12'>
+      <pose>-1.894000 0.720000 1.830000 0.000000 0.000000 0.000000</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.020000 0.3000000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00012</name>
             </script>
           </material>
         </visual>
