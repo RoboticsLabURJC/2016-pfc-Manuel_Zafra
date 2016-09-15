@@ -95,10 +95,16 @@ class Pilot():
             yaw_d = 0.0
         """
 
+        #######
+        self.Vel = 0
+        #######
+
         uy = uy * self.Vel
         ux = ux * self.Vel
         uz = uz * self.Vel
         uw = yaw_d * self.AngVel
+
+
 
         self.interface.sendCMDVel(ux, uy, uz, uw)
         #self.interface.sendCMDVel(0, 0, 0, 0)

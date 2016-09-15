@@ -5,10 +5,11 @@ from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
-from collada import *
+import collada
 import math
 import sys
 import pickle
+import OBJFile
 
 
 class Gui(QtGui.QWidget):
@@ -25,6 +26,12 @@ class Gui(QtGui.QWidget):
         self.changeCam.setMaximumSize(250,40)
         self.changeCam.setParent(self)
         self.changeCam.clicked.connect(self.changeCamera)
+
+        self.changeView = QtGui.QPushButton("Change View")
+        self.changeView.setMinimumSize(250,40)
+        self.changeView.setMaximumSize(250,40)
+        self.changeView.setParent(self)
+        self.changeView.clicked.connect(self.changeViewpoint)
 
         self.posText = QtGui.QLabel(self)
         self.posText.setMinimumSize(250,100)
@@ -48,6 +55,8 @@ class Gui(QtGui.QWidget):
         VLayout.addStretch(1)
         VLayout.addWidget(self.changeCam)
         VLayout.addStretch(1)
+        VLayout.addWidget(self.changeView)
+        VLayout.addStretch(1)
         VLayout.addWidget(self.posText)
         VLayout.addStretch(1)
 
@@ -66,6 +75,9 @@ class Gui(QtGui.QWidget):
 
     def changeCamera(self):
         self.interface.toggleCam()
+
+    def changeViewpoint(self):
+        self.glWidget.toggleView()
 
     def update(self):
         pose3d = self.interface.getPose3D()
@@ -98,20 +110,21 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.trailbuff = RingBuffer(150)
         #self.routbuff = RingBuffer(250)
         self.routbuff = []
-        self.view_d = 40.0
+        self.viewpoint = True
+        self.view_d = 20.0
         self.view_ang = math.radians(60.0)
         self.eyex = self.view_d * math.sin(self.view_ang)
         self.eyey = 0.0
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
         self.rot = 20.0 #degrees
-        self.dronemesh = Collada('gui/quadrotor/quadrotor_2.dae')
+        self.drone3d = OBJFile.OBJFile('gui/quadrotor/blender/quadrotor_CAD2.obj')
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
         if self.pose3d != None :
-            self.dX = 2*pose3d.x
-            self.dY = 2*pose3d.y
-            self.dZ = 2*pose3d.z
+            self.dX = pose3d.x
+            self.dY = pose3d.y
+            self.dZ = pose3d.z
             self.trailbuff.append(self.pose3d)
 
     def setRoute(self, pose3d):
@@ -119,86 +132,96 @@ class GLWidget(QtOpenGL.QGLWidget):
             #self.routbuff.append(pose3d)
             self.routbuff = pose3d
 
-    def paintGL(self):
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-        glLoadIdentity()
-        gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,5, 0,0,1)
-        glRotatef( self.rot, 0, 0, 1 )
-
-        self.axis()
-        self.floor()
-        if self.pose3d != None :
-            self.drone()
-        self.trail()
-        if self.routbuff != None :
-            self.route()
-        self.swapBuffers()
-
     def initializeGL(self):
-        glClearColor(0.0, 0.0, 0.0, 0.0);
+        glClearColor(0.2, 0.2, 0.2, 1);
+
+        glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
+        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.5, 1.0))
+        glEnable(GL_LIGHT0)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_DEPTH_TEST)
+        glShadeModel(GL_SMOOTH) 
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective( 60, 1, 1, 1000 )
         glMatrixMode(GL_MODELVIEW)
-        gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,5, 0,0,1)
+        gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,0, 0,0,1)
         glRotatef( self.rot, 0, 0, 1 )
+
+
+    def paintGL(self):
+
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        #glMatrixMode(GL_PROJECTION) # Select The Projection Matrix
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        if self.viewpoint == True :
+            gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,0, 0,0,1)
+            glRotatef( self.rot, 0, 0, 1 )
+        else :
+            gluLookAt( self.dX + self.view_d*math.cos(15) ,
+                        self.dY + self.view_d*math.cos(15) ,
+                        self.dZ + self.view_d*math.sin(15) ,
+                        self.dX, self.dY, self.dZ,
+                        0,0,1)
+        self.axis()
+        self.floor()
+        self.trail()
+        if self.routbuff != None :
+            self.route()
+        if self.pose3d != None :
+            self.drone()
+        self.swapBuffers()
+
 
     def axis(self):
         #Draws 3d axis
-        glLineWidth(1)
+        glLineWidth(2)
         glColor3f(1.0, 0.0, 0.0)
         glBegin(GL_LINES)
         glVertex3f(0, 0, 0)
-        glVertex3f(10, 0, 0)
+        glVertex3f(5, 0, 0)
         glEnd()
         glColor3f(0.0, 1.0, 0.0)
         glBegin(GL_LINES)
         glVertex3f(0, 0, 0)
-        glVertex3f(0, 10, 0)
+        glVertex3f(0, 5, 0)
         glEnd()
         glColor3f(0.0, 0.0, 1.0)
         glBegin(GL_LINES)
         glVertex3f(0, 0, 0)
-        glVertex3f(0, 0, 10)
+        glVertex3f(0, 0, 5)
         glEnd()
 
     def floor(self):
         #Draws floor grid
         glLineWidth(0.5)
-        glColor3f(0.2, 0.2, 0.2)
+        glColor3f(0.0, 0.0, 0.0)
         for x in range(-10,11):
             glBegin(GL_LINES)
-            glVertex3f(x*3, -30, 0)
-            glVertex3f(x*3, 30, 0)
+            glVertex3f(x*2, -20, 0)
+            glVertex3f(x*2, 20, 0)
             glEnd()
             glBegin(GL_LINES)
-            glVertex3f(30, x*3, 0)
-            glVertex3f(-30, x*3, 0)
+            glVertex3f(20, x*2, 0)
+            glVertex3f(-20, x*2, 0)
             glEnd()
 
     def drone(self):
         #Draws drone position
+        glDisable(GL_COLOR_MATERIAL)
         yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,self.pose3d.q2,self.pose3d.q3)
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
         glRotatef(yaw,0,0,1)
-        glColor3f(0.9, 0.9, 0.9)
-        c = gluNewQuadric()
-        gluCylinder(c,1.3,1.3,0.5,8,2)
-        glPointSize(6)
-        glBegin(GL_POINTS)
-        glVertex(0,0,0.3)
-        glEnd()
-        glColor3f(0.9, 0.2, 0.2)
-        glLineWidth(2.5)
-        glBegin(GL_LINES)
-        glVertex3f(0, 0, 0.3)
-        glVertex3f(2, 0, 0.3)
-        glEnd()
-        glPopMatrix();
+        self.drone3d.draw()
+        glPopMatrix()
+        glEnable(GL_COLOR_MATERIAL)
 
     def trail(self):
         #Draws drone's movement trail
@@ -219,32 +242,37 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         for (x,y,z) in self.routbuff:
             glBegin(GL_POINTS)
-            glVertex(x*2,y*2,z*2)
+            glVertex(x,y,z)
             glEnd()
             glBegin(GL_LINES)
-            glVertex3f(x*2,y*2,z*2)
-            glVertex3f(xx*2,yy*2,zz*2)
+            glVertex3f(x,y,z)
+            glVertex3f(xx,yy,zz)
             glEnd()
             (xx, yy, zz) = (x, y, z)
 
     def drawTrailLine(self, poseA, poseB):
         #Draws line between two given pose3D data structures
         glBegin(GL_LINES)
-        glVertex3f(poseA.x*2, poseA.y*2, poseA.z*2)
-        glVertex3f(poseB.x*2, poseB.y*2, poseB.z*2)
+        glVertex3f(poseA.x, poseA.y, poseA.z)
+        glVertex3f(poseB.x, poseB.y, poseB.z)
         glEnd()
 
     def qtoyaw(self, q0,q1,q2,q3):
-        #Transforms quaternions to (yaw,pitch,roll)
+        #Transforms quaternions to (yaw,pitch,roll) 
         yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
         return math.degrees(yaw)  #[degrees]
+
+    def toggleView(self):
+        self.viewpoint = not self.viewpoint
+        if not self.viewpoint : self.view_d = 5
 
     def keyPressEvent(self, e):
         if e.key() == QtCore.Qt.Key_Right :
             self.rot -= 2
         elif e.key() == QtCore.Qt.Key_Left :
             self.rot += 2
-        elif e.key() == QtCore.Qt.Key_Up :
+	    #elif
+        if e.key() == QtCore.Qt.Key_Up :
             self.view_ang -= math.radians(0.7)
             if self.view_ang > math.radians(90):
                 self.view_ang = math.radians(90)
