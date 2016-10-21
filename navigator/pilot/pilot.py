@@ -20,7 +20,7 @@ class Pilot():
 
 
     def update(self):
-        pose3d = self.interface.getPose3D()
+        pose3d = self.interface.getRealPose3D()
         self.path = self.interface.getPath(self.step)
         self.pilot(pose3d)
 
@@ -96,7 +96,7 @@ class Pilot():
         """
 
         #######
-        self.Vel = 0
+        #self.Vel = 0
         #######
 
         uy = uy * self.Vel

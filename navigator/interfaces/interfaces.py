@@ -26,11 +26,19 @@ class Interfaces():
             properties = ic.getProperties()
 
             #Connection to ICE interfaces
+            #------- REALPOSE3D ---------
+            baserealpose3D = ic.propertyToProxy("Navigator.RealPose3D.Proxy")
+            self.realpose3DProxy=jderobot.Pose3DPrx.checkedCast(baserealpose3D)
+            if self.realpose3DProxy:
+                self.realpose=jderobot.Pose3DData()
+            else:
+                print 'Interface pose3D not connected'
+
             #------- POSE3D ---------
             basepose3D = ic.propertyToProxy("Navigator.Pose3D.Proxy")
             self.pose3DProxy=jderobot.Pose3DPrx.checkedCast(basepose3D)
             if self.pose3DProxy:
-                self.pose=jderobot.Pose3DData()
+                self.realpose=jderobot.Pose3DData()
             else:
                 print 'Interface pose3D not connected'
 
@@ -82,12 +90,19 @@ class Interfaces():
 	    exit()
             status = 1
 
-        self.takeoff()
+        if self.extraProxy:
+            self.lock.acquire()
+            self.extraProxy.toggleCam()
+            self.lock.release()
+
+        self.pause = False
+        #self.takeoff()
 
     def update(self):
         self.lock.acquire()
         self.updateCamera()
         self.updateNavdata()
+        self.updateRealPose()
         self.updatePose()
         self.lock.release()
 
@@ -101,6 +116,10 @@ class Interfaces():
         if self.navdataProxy:
             self.navdata=self.navdataProxy.getNavdata()
 
+    def updateRealPose(self):
+        if self.realpose3DProxy:
+            self.realpose=self.realpose3DProxy.getPose3DData()
+
     def updatePose(self):
         if self.pose3DProxy:
             self.pose=self.pose3DProxy.getPose3DData()
@@ -113,6 +132,15 @@ class Interfaces():
             return tmp
 
         return None
+
+    def getRealPose3D(self):
+        if self.realpose3DProxy:
+            self.lock.acquire()
+            tmp=self.realpose
+            self.lock.release()
+            return tmp
+        else:
+            return None
 
     def getPose3D(self):
         if self.pose3DProxy:
@@ -151,23 +179,33 @@ class Interfaces():
             self.lock.release()
 
     def sendCMDVel(self,vx,vy,vz,yaw):
-        cmd=jderobot.CMDVelData()
-        cmd.linearX=vx
-        cmd.linearY=vy
-        cmd.linearZ=vz
-        cmd.angularZ=yaw
-        cmd.angularX=cmd.angularY=1.0
+        if not self.pause:
+            cmd=jderobot.CMDVelData()
+            cmd.linearX=vx
+            cmd.linearY=vy
+            cmd.linearZ=vz
+            cmd.angularZ=yaw
+            cmd.angularX=cmd.angularY=1.0
+        else:
+            cmd=jderobot.CMDVelData()
+            cmd.linearX=0
+            cmd.linearY=0
+            cmd.linearZ=0
+            cmd.angularZ=0
+            cmd.angularX=cmd.angularY=0
 
         if self.cmdVelProxy:
             self.lock.acquire();
             self.cmdVelProxy.setCMDVelData(cmd)
             self.lock.release();
+
+    def startdrone(self):
+        self.pause = False
+        self.takeoff()
+
+    def pausedrone(self):
+        self.pause = True
         
-    def toggleCam(self):
-        if self.extraProxy:
-            self.lock.acquire()
-            self.extraProxy.toggleCam()
-            self.lock.release()
 
 
     #def getRoute(self):

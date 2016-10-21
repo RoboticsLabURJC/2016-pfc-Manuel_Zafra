@@ -7,9 +7,11 @@ from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 import collada
 import math
+import numpy as np
 import sys
 import pickle
 import OBJFile
+import pyqtgraph as pg
 
 
 class Gui(QtGui.QWidget):
@@ -18,14 +20,20 @@ class Gui(QtGui.QWidget):
         super(Gui, self).__init__()
 
         self.setWindowTitle('Drone Navigator')
-        self.setMinimumSize(780,470)
-        self.setMaximumSize(780,470)
+        self.setMinimumSize(740,780)
+        self.setMaximumSize(740,780)
 
-        self.changeCam = QtGui.QPushButton("Change Camera")
-        self.changeCam.setMinimumSize(250,40)
-        self.changeCam.setMaximumSize(250,40)
-        self.changeCam.setParent(self)
-        self.changeCam.clicked.connect(self.changeCamera)
+        self.startButton = QtGui.QPushButton("Start")
+        self.startButton.setMinimumSize(120,40)
+        self.startButton.setMaximumSize(120,40)
+        self.startButton.setParent(self)
+        self.startButton.clicked.connect(self.startdrone)
+
+        self.pauseButton = QtGui.QPushButton("Pause")
+        self.pauseButton.setMinimumSize(120,40)
+        self.pauseButton.setMaximumSize(120,40)
+        self.pauseButton.setParent(self)
+        self.pauseButton.clicked.connect(self.pausedrone)
 
         self.changeView = QtGui.QPushButton("Change View")
         self.changeView.setMinimumSize(250,40)
@@ -47,13 +55,29 @@ class Gui(QtGui.QWidget):
         self.imgLabel.setMinimumSize(250,250)
         self.imgLabel.setMaximumSize(250,250)
         self.imgLabel.show()
+
+        self.plotWidget = pg.GraphicsWindow()
+        pg.setConfigOptions(antialias=True)
+        self.plotWidget.setMinimumSize(720,300)
+        self.plotWidget.setMaximumSize(720,300)
+        self.errorplot = self.plotWidget.addPlot(title="Error")
+        self.errordata =np.zeros(100) 
+        self.errorplot.plot(self.errordata, pen=(255,0,0), name="Red curve", clear=True)
+               
         self.connect(self, QtCore.SIGNAL("NewImg"), self.update_img)
-        
+
+        HButtonLayout = QtGui.QHBoxLayout()
+        HButtonLayout.addStretch(1)
+        HButtonLayout.addWidget(self.startButton)
+        HButtonLayout.addStretch(1)
+        HButtonLayout.addWidget(self.pauseButton)
+        HButtonLayout.addStretch(1)
+
         VLayout = QtGui.QVBoxLayout()
         VLayout.addStretch(1)
         VLayout.addWidget(self.imgLabel)
         VLayout.addStretch(1)
-        VLayout.addWidget(self.changeCam)
+        VLayout.addLayout(HButtonLayout)
         VLayout.addStretch(1)
         VLayout.addWidget(self.changeView)
         VLayout.addStretch(1)
@@ -67,14 +91,24 @@ class Gui(QtGui.QWidget):
         HLayout.addWidget(self.glWidget)
         HLayout.addStretch(1)
 
-        self.setLayout(HLayout)
+        MainLayout = QtGui.QVBoxLayout()
+        MainLayout.addStretch(1)
+        MainLayout.addLayout(HLayout)
+        MainLayout.addStretch(1)
+        MainLayout.addWidget(self.plotWidget)
+        MainLayout.addStretch(1)
+
+        self.setLayout(MainLayout)
         
 
     def setInterface(self,interface):
         self.interface=interface
 
-    def changeCamera(self):
-        self.interface.toggleCam()
+    def pausedrone(self):
+        self.interface.pausedrone()
+
+    def startdrone(self):
+        self.interface.startdrone()
 
     def changeViewpoint(self):
         self.glWidget.toggleView()
@@ -82,21 +116,26 @@ class Gui(QtGui.QWidget):
     def update(self):
         pose3d = self.interface.getPose3D()
         self.glWidget.setPose3D(pose3d)
+        realpose3d = self.interface.getRealPose3D()
+        self.glWidget.setRealPose3D(realpose3d)
         route = self.interface.getRoute()
         self.glWidget.setRoute(route)
         self.glWidget.update()
         image = self.interface.getImage()
-        if image != None:
-            self.emit(QtCore.SIGNAL("NewImg"), image)
         self.posText.setText("Position: \n(%f, %f, %f)"
             %(pose3d.x, pose3d.y, pose3d.z))
+        np.roll(self.errordata, 1)
+        self.errordata[0] = realpose3d.z
+        if image != None:
+            self.emit(QtCore.SIGNAL("NewImg"), image)
 
     def update_img(self, image):
         img = QtGui.QImage(image.data, image.shape[1], image.shape[0], QtGui.QImage.Format_RGB888)
         #size=QtCore.QSize(image.shape[1],image.shape[0])
         #self.imgLabel.resize(size)
         self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
-
+        self.errorplot.plot(self.errordata, pen=(255,0,0), name="Red curve", clear=True)
+        
 
 
 
@@ -107,7 +146,9 @@ class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         self.pose3d = None
+        self.realpose3d = None
         self.trailbuff = RingBuffer(150)
+        self.realtrailbuff = RingBuffer(150)
         #self.routbuff = RingBuffer(250)
         self.routbuff = []
         self.viewpoint = True
@@ -122,10 +163,16 @@ class GLWidget(QtOpenGL.QGLWidget):
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
         if self.pose3d != None :
+            self.trailbuff.append(self.pose3d)
+        
+
+    def setRealPose3D(self, pose3d):
+        self.realpose3d = pose3d
+        if self.realpose3d != None :
             self.dX = pose3d.x
             self.dY = pose3d.y
             self.dZ = pose3d.z
-            self.trailbuff.append(self.pose3d)
+            self.realtrailbuff.append(self.realpose3d)
 
     def setRoute(self, pose3d):
         if pose3d != None :
@@ -133,7 +180,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.routbuff = pose3d
 
     def initializeGL(self):
-        glClearColor(0.2, 0.2, 0.2, 1);
+        glClearColor(0.3, 0.3, 0.3, 1);
 
         glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
         glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
@@ -172,6 +219,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.axis()
         self.floor()
         self.trail()
+        self.realtrail()
         if self.routbuff != None :
             self.route()
         if self.pose3d != None :
@@ -215,7 +263,8 @@ class GLWidget(QtOpenGL.QGLWidget):
     def drone(self):
         #Draws drone position
         glDisable(GL_COLOR_MATERIAL)
-        yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,self.pose3d.q2,self.pose3d.q3)
+        yaw = self.qtoyaw(self.realpose3d.q0,self.realpose3d.q1,
+            self.realpose3d.q2,self.realpose3d.q3)
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
         glRotatef(yaw,0,0,1)
@@ -229,6 +278,13 @@ class GLWidget(QtOpenGL.QGLWidget):
         glColor3f(0.2, 0.5, 0.2)
         for x in range(1,self.trailbuff.getlen()-1):
             self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
+
+    def realtrail(self):
+        #Draws drone's movement trail
+        glLineWidth(1)
+        glColor3f(0.2, 0.2, 0.5)
+        for x in range(1,self.realtrailbuff.getlen()-1):
+            self.drawTrailLine(self.realtrailbuff.get(x),self.realtrailbuff.get(x+1))
 
     def route(self):
         #Draws drone's path
@@ -294,7 +350,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
 
 
-
 class RingBuffer:
     #Class that implements a not-yet-full buffer
     def __init__(self,size_max):
@@ -324,4 +379,5 @@ class RingBuffer:
 
     def getlen(self):
         return len(self.data)
+
 
