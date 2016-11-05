@@ -24,8 +24,8 @@ class Gui(QtGui.QWidget):
         self.setMaximumSize(740,780)
 
         self.startButton = QtGui.QPushButton("Start")
-        self.startButton.setMinimumSize(120,40)
-        self.startButton.setMaximumSize(120,40)
+        self.startButton.setMinimumSize(250,40)
+        self.startButton.setMaximumSize(250,40)
         self.startButton.setParent(self)
         self.startButton.clicked.connect(self.startdrone)
 
@@ -35,6 +35,12 @@ class Gui(QtGui.QWidget):
         self.pauseButton.setParent(self)
         self.pauseButton.clicked.connect(self.pausedrone)
 
+        self.landButton = QtGui.QPushButton("Land")
+        self.landButton.setMinimumSize(120,40)
+        self.landButton.setMaximumSize(120,40)
+        self.landButton.setParent(self)
+        self.landButton.clicked.connect(self.landdrone)
+
         self.changeView = QtGui.QPushButton("Change View")
         self.changeView.setMinimumSize(250,40)
         self.changeView.setMaximumSize(250,40)
@@ -42,8 +48,8 @@ class Gui(QtGui.QWidget):
         self.changeView.clicked.connect(self.changeViewpoint)
 
         self.posText = QtGui.QLabel(self)
-        self.posText.setMinimumSize(250,100)
-        self.posText.setMaximumSize(250,100)
+        self.posText.setMinimumSize(250,60)
+        self.posText.setMaximumSize(250,60)
         self.posText.show()
 
         self.glWidget = GLWidget()
@@ -60,15 +66,21 @@ class Gui(QtGui.QWidget):
         pg.setConfigOptions(antialias=True)
         self.plotWidget.setMinimumSize(720,300)
         self.plotWidget.setMaximumSize(720,300)
-        self.errorplot = self.plotWidget.addPlot(title="Error")
-        self.errordata =np.zeros(100) 
-        self.errorplot.plot(self.errordata, pen=(255,0,0), name="Red curve", clear=True)
+        self.errorplot = self.plotWidget.addPlot(title="Error Monitoring")
+        self.errorplot.showAxis('bottom', False)
+        self.errorplot.setRange(yRange=[0,3])
+        self.errorplot.showGrid(y=True)
+        self.errordata =np.zeros(250) 
+        self.errorplot.addLegend()
+        self.errorcurve = self.errorplot.plot(self.errordata, pen=(255,0,0),
+            name="Pose3D Error", clear=True)
+        self.ptr = 0
                
         self.connect(self, QtCore.SIGNAL("NewImg"), self.update_img)
 
         HButtonLayout = QtGui.QHBoxLayout()
         HButtonLayout.addStretch(1)
-        HButtonLayout.addWidget(self.startButton)
+        HButtonLayout.addWidget(self.landButton)
         HButtonLayout.addStretch(1)
         HButtonLayout.addWidget(self.pauseButton)
         HButtonLayout.addStretch(1)
@@ -76,6 +88,8 @@ class Gui(QtGui.QWidget):
         VLayout = QtGui.QVBoxLayout()
         VLayout.addStretch(1)
         VLayout.addWidget(self.imgLabel)
+        VLayout.addStretch(1)
+        VLayout.addWidget(self.startButton)
         VLayout.addStretch(1)
         VLayout.addLayout(HButtonLayout)
         VLayout.addStretch(1)
@@ -107,6 +121,9 @@ class Gui(QtGui.QWidget):
     def pausedrone(self):
         self.interface.pausedrone()
 
+    def landdrone(self):
+        self.interface.landdrone()
+
     def startdrone(self):
         self.interface.startdrone()
 
@@ -124,8 +141,10 @@ class Gui(QtGui.QWidget):
         image = self.interface.getImage()
         self.posText.setText("Position: \n(%f, %f, %f)"
             %(pose3d.x, pose3d.y, pose3d.z))
-        np.roll(self.errordata, 1)
-        self.errordata[0] = realpose3d.z
+        if self.ptr == 249 :
+            self.errordata = np.roll(self.errordata, -1)
+        else : self.ptr += 1
+        self.errordata[self.ptr] = self.poseError(realpose3d, pose3d)
         if image != None:
             self.emit(QtCore.SIGNAL("NewImg"), image)
 
@@ -134,7 +153,11 @@ class Gui(QtGui.QWidget):
         #size=QtCore.QSize(image.shape[1],image.shape[0])
         #self.imgLabel.resize(size)
         self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
-        self.errorplot.plot(self.errordata, pen=(255,0,0), name="Red curve", clear=True)
+        self.errorcurve.setData(self.errordata)
+
+    def poseError(self, pose3d1, pose3d2):
+        d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
+        return d
         
 
 
@@ -147,7 +170,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         super(GLWidget, self).__init__(parent)
         self.pose3d = None
         self.realpose3d = None
-        self.trailbuff = RingBuffer(150)
+        self.trailbuff = RingBuffer(250)
         self.realtrailbuff = RingBuffer(150)
         #self.routbuff = RingBuffer(250)
         self.routbuff = []
@@ -180,7 +203,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.routbuff = pose3d
 
     def initializeGL(self):
-        glClearColor(0.3, 0.3, 0.3, 1);
+        glClearColor(0.6, 0.6, 0.6, 1);
 
         glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
         glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
@@ -232,18 +255,18 @@ class GLWidget(QtOpenGL.QGLWidget):
         glLineWidth(2)
         glColor3f(1.0, 0.0, 0.0)
         glBegin(GL_LINES)
-        glVertex3f(0, 0, 0)
-        glVertex3f(5, 0, 0)
+        glVertex3f(0, 0, 0.001)
+        glVertex3f(5, 0, 0.001)
         glEnd()
         glColor3f(0.0, 1.0, 0.0)
         glBegin(GL_LINES)
-        glVertex3f(0, 0, 0)
-        glVertex3f(0, 5, 0)
+        glVertex3f(0, 0, 0.001)
+        glVertex3f(0, 5, 0.001)
         glEnd()
         glColor3f(0.0, 0.0, 1.0)
         glBegin(GL_LINES)
-        glVertex3f(0, 0, 0)
-        glVertex3f(0, 0, 5)
+        glVertex3f(0, 0, 0.001)
+        glVertex3f(0, 0, 5.001)
         glEnd()
 
     def floor(self):
@@ -274,15 +297,15 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def trail(self):
         #Draws drone's movement trail
-        glLineWidth(1)
+        glLineWidth(2)
         glColor3f(0.2, 0.5, 0.2)
         for x in range(1,self.trailbuff.getlen()-1):
             self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
 
     def realtrail(self):
         #Draws drone's movement trail
-        glLineWidth(1)
-        glColor3f(0.2, 0.2, 0.5)
+        glLineWidth(2)
+        glColor3f(0.15, 0.15, 0.5)
         for x in range(1,self.realtrailbuff.getlen()-1):
             self.drawTrailLine(self.realtrailbuff.get(x),self.realtrailbuff.get(x+1))
 
@@ -292,6 +315,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         #glColor3f(0.7, 0.3, 0.3)
         #for x in range(1,self.routbuff.getlen()-1):
         #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
+        glLineWidth(2)
         glColor3f(0.7, 0.3, 0.3)
         glPointSize(2)
         (xx, yy, zz) = self.routbuff[0]

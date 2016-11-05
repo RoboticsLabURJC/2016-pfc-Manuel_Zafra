@@ -172,11 +172,13 @@ class Interfaces():
         else:
             return self.path[len(self.path)-1]
 
+    '''
     def takeoff(self):
         if self.extraProxy:
             self.lock.acquire()
             self.extraProxy.takeoff()
             self.lock.release()
+    '''
 
     def sendCMDVel(self,vx,vy,vz,yaw):
         if not self.pause:
@@ -201,12 +203,20 @@ class Interfaces():
 
     def startdrone(self):
         self.pause = False
-        self.takeoff()
+        if self.extraProxy:
+            self.lock.acquire()
+            self.extraProxy.takeoff()
+            self.lock.release()
 
     def pausedrone(self):
         self.pause = True
-        
 
+    def landdrone(self):
+        if self.extraProxy:
+            self.lock.acquire()
+            self.extraProxy.land()
+            self.lock.release()
+        #self.pause = True
 
     #def getRoute(self):
     #    if self.routeProxy:

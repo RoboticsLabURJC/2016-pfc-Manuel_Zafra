@@ -9,6 +9,8 @@ class Pilot():
     def __init__(self, interface):
         self.step = 0
         self.angDiff = 0
+        self.pathError = 0
+        self.posError = 0
         self.setVel(0.3,0.3)
         self.interface = interface
         self.path = self.interface.getPath(0)
@@ -172,4 +174,8 @@ class Pilot():
         #Distance between drone position and next point
         (a,b,c) = self.path
         d = math.sqrt((pose3d.x - a)**2 + (pose3d.y - b)**2 + (pose3d.z - c)**2)
+        return d
+
+    def poseError(self, pose3d1, pose3d2):
+        d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
         return d
