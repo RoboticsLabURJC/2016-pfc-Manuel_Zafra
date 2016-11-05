@@ -115,13 +115,13 @@
 <!--  APRIL_TAGS   -->
 
     <model name='tag_0'>
-      <pose>-3.817000 0.700000 1.120000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.817000 0.700000 1.120000 1.570796 0  0</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -129,7 +129,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -144,13 +144,13 @@
     </model>
 
     <model name='tag_1'>
-      <pose>-2.583000 -8.289000 0.740000 0.630000 0.000000 0.000000</pose>
+      <pose>-2.583000 -8.289000 0.740000 0.940796 0 3.14159</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -158,7 +158,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -173,13 +173,13 @@
     </model>
 
     <model name='tag_2'>
-      <pose>-3.304000 -4.474000 1.650000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.304000 -4.474000 1.650000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -187,7 +187,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -202,13 +202,13 @@
     </model>
 
     <model name='tag_3'>
-      <pose>-2.103000 -1.589000 2.006000 0.000000 0.000000 0.000000</pose>
+      <pose>-2.103000 -1.589000 2.006000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -216,7 +216,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -229,15 +229,15 @@
       </link>
       <static>0</static>
     </model>
--2.583000 -8.289000 0.740000
+
     <model name='tag_4'>
-      <pose>-4.549000 0.727000 1.700000 0.000000 0.000000 0.000000</pose>
+      <pose>-4.549000 0.727000 1.700000 1.570796 0 0</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -245,7 +245,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -260,13 +260,13 @@
     </model>
 
     <model name='tag_5'>
-      <pose>-1.512600 -0.691000 1.700000 0.000000 0.000000 0.000000</pose>
+      <pose>-0.839 -0.497 1.700000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -274,7 +274,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -289,13 +289,13 @@
     </model>
 
     <model name='tag_6'>
-      <pose>-3.535000 -3.062500 1.400000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.535000 -3.062500 1.400000 1.570796 0 3.14159</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -303,7 +303,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -318,13 +318,13 @@
     </model>
 
     <model name='tag_7'>
-      <pose>-2.101000 -1.051000 1.5870000 0.000000 0.000000 0.000000</pose>
+      <pose>-2.101000 -1.051000 1.5870000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -332,7 +332,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -347,13 +347,13 @@
     </model>
 
     <model name='tag_8'>
-      <pose>0.294000 -5.820000 1.872000 0.000000 0.000000 0.000000</pose>
+      <pose>0.294000 -5.820000 1.872000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -361,7 +361,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -376,13 +376,13 @@
     </model>
 
     <model name='tag_9'>
-      <pose>-1.435000 -8.478000 1.800000 0.000000 0.000000 0.000000</pose>
+      <pose>-1.435000 -8.478000 1.800000 1.570796 0 3.14159</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -390,7 +390,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -405,13 +405,13 @@
     </model>
 
     <model name='tag_10'>
-      <pose>-1.614000 -4.29500 1.800000 0.000000 0.000000 0.000000</pose>
+      <pose>-1.614000 -4.29500 1.800000 1.570796 0 0</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -419,7 +419,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -434,13 +434,13 @@
     </model>
 
     <model name='tag_11'>
-      <pose>-3.338000 -3.071000 1.990000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.338000 -3.071000 1.990000 1.570796 0 3.14159</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -448,7 +448,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -463,13 +463,13 @@
     </model>
 
     <model name='tag_12'>
-      <pose>-3.128000 0.720000 1.830000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.128000 0.720000 1.830000 1.570796 0 0</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -477,7 +477,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -492,7 +492,7 @@
     </model>
 
     <model name='tag_13'>
-      <pose>-2.110000 -3.543000 1.510000 0.000000 0.000000 0.000000</pose>
+      <pose>-2.110000 -3.543000 1.510000 1.570796 0 -1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
@@ -506,7 +506,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -521,7 +521,7 @@
     </model>
 
     <model name='tag_14'>
-      <pose>-2.620000 -4.091000 2.215000 0.000000 0.000000 0.000000</pose>
+      <pose>-2.88400 -4.091000 2.215000 1.570796 0 3.14159</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
@@ -535,7 +535,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.300000 0.020000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -550,7 +550,7 @@
     </model>
 
     <model name='tag_15'>
-      <pose>-7.694000 -2.223000 2.208000 0.000000 0.000000 0.000000</pose>
+      <pose>-7.694000 -2.223000 2.208000 1.570796 0 1.570796</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
@@ -564,7 +564,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -579,13 +579,13 @@
     </model>
 
     <model name='tag_16'>
-      <pose>-3.065000 -4.474000 1.650000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.094000 -4.474000 1.650000 1.570796 0 -1.570796</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -593,7 +593,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -608,13 +608,13 @@
     </model>
 
     <model name='tag_17'>
-      <pose>-3.902000 -3.178000 1.650000 0.000000 0.000000 0.000000</pose>
+      <pose>-3.902000 -3.178000 1.650000 1.570796 0-1.5708</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -622,7 +622,7 @@
         <visual name='visual'>
           <geometry>
             <box>
-              <size>0.020000 0.300000 0.3000000</size>
+              <size>0.300000 0.3000000 0.020000</size>
             </box>
           </geometry>
           <material>
@@ -636,6 +636,150 @@
       <static>0</static>
     </model>
 
+    <model name='tag_18'>
+      <pose>-1.712 -6.690 0.496 0 0 3.14159</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00018</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_19'>
+      <pose>-3.045 -5.939 1.935 1.5708 0 2.023644</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00019</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_20'>
+      <pose>0.293 -7.471 2.131 1.5708 0 -1.5708</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00020</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_21'>
+      <pose>-2.201 -4.003 2.293 1.57079 0 -2.4381</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00021</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_22'>
+      <pose>-0.559 -8.289 0.74 0.94079 0 3.1416</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00022</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
 <!--  ANNIES_FLAT   -->
 
     <physics type='ode'>
