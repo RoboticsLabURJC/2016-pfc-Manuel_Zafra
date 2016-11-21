@@ -14,11 +14,28 @@ class Pilot():
         self.setVel(0.3,0.3)
         self.interface = interface
         self.path = self.interface.getPath(0)
+        self.fullpath = self.loadpath()
         self.navState = 0
             # 0 = Start
             # 1 = Movement
             # 2 = Close to point
         self.startCount = 0
+
+
+    def loadpath(self):
+        a = []
+        pose = jderobot.Pose3DData()
+        pathfile = open('path.txt','r')
+        for line in pathfile.readlines():
+            line = line.rstrip('\n')
+            linelist = line.split()
+            pose.x = float(linelist[0])
+            pose.y = float(linelist[1])
+            pose.z = float(linelist[2])
+            a.append(pose)
+        pathfile.close()
+        return np.array(a)
+
 
 
     def update(self):
@@ -98,7 +115,7 @@ class Pilot():
         """
 
         #######
-        #self.Vel = 0
+        self.Vel = 0.1
         #######
 
         uy = uy * self.Vel

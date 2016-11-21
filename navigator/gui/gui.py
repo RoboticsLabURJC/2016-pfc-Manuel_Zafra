@@ -7,6 +7,7 @@ from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 import collada
 import math
+import jderobot
 import numpy as np
 import sys
 import pickle
@@ -66,16 +67,20 @@ class Gui(QtGui.QWidget):
         pg.setConfigOptions(antialias=True)
         self.plotWidget.setMinimumSize(720,300)
         self.plotWidget.setMaximumSize(720,300)
-        self.errorplot = self.plotWidget.addPlot(title="Error Monitoring")
-        self.errorplot.showAxis('bottom', False)
-        self.errorplot.setRange(yRange=[0,3])
-        self.errorplot.showGrid(y=True)
-        self.errordata =np.zeros(250) 
-        self.errorplot.addLegend()
-        self.errorcurve = self.errorplot.plot(self.errordata, pen=(255,0,0),
-            name="Pose3D Error", clear=True)
-        self.ptr = 0
-               
+
+        self.poseErrorplot = self.plotWidget.addPlot()
+        self.poseErrorplot.showAxis('bottom', False)
+        self.poseErrorplot.setRange(yRange=[0,3])
+        self.poseErrorplot.showGrid(y=True)
+        self.poseErrordata =np.zeros(250) 
+        self.angleErrordata =np.zeros(250) 
+        self.poseErrorplot.addLegend()
+        self.poseErrorcurve = self.poseErrorplot.plot(self.poseErrordata, pen=(255,0,0),
+            name="Pose3D Error")
+        self.angleErrorcurve = self.poseErrorplot.plot(self.angleErrordata, pen=(0,255,0),
+            name="Angle Error")
+
+        self.ptr = 0      
         self.connect(self, QtCore.SIGNAL("NewImg"), self.update_img)
 
         HButtonLayout = QtGui.QHBoxLayout()
@@ -135,16 +140,16 @@ class Gui(QtGui.QWidget):
         self.glWidget.setPose3D(pose3d)
         realpose3d = self.interface.getRealPose3D()
         self.glWidget.setRealPose3D(realpose3d)
-        route = self.interface.getRoute()
-        self.glWidget.setRoute(route)
         self.glWidget.update()
         image = self.interface.getImage()
         self.posText.setText("Position: \n(%f, %f, %f)"
             %(pose3d.x, pose3d.y, pose3d.z))
         if self.ptr == 249 :
-            self.errordata = np.roll(self.errordata, -1)
+            self.poseErrordata = np.roll(self.poseErrordata, -1)
+            self.angleErrordata = np.roll(self.angleErrordata, -1)
         else : self.ptr += 1
-        self.errordata[self.ptr] = self.poseError(realpose3d, pose3d)
+        self.poseErrordata[self.ptr] = self.poseError(realpose3d, pose3d)
+        self.angleErrordata[self.ptr] = self.angleError(realpose3d, pose3d)
         if image != None:
             self.emit(QtCore.SIGNAL("NewImg"), image)
 
@@ -153,13 +158,16 @@ class Gui(QtGui.QWidget):
         #size=QtCore.QSize(image.shape[1],image.shape[0])
         #self.imgLabel.resize(size)
         self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
-        self.errorcurve.setData(self.errordata)
+        self.poseErrorcurve.setData(self.poseErrordata)
+        self.angleErrorcurve.setData(self.angleErrordata)
 
     def poseError(self, pose3d1, pose3d2):
         d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
         return d
         
-
+    def angleError(self, pose3d1, pose3d2):
+        e = math.sqrt((pose3d1.q0 - pose3d2.q0)**2 + (pose3d1.q1 - pose3d2.q1)**2 + (pose3d1.q2 - pose3d2.q2)**2 + (pose3d1.q3 - pose3d2.q3)**2)
+        return e
 
 
 # OPENGL WIDGET CLASS
@@ -172,8 +180,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.realpose3d = None
         self.trailbuff = RingBuffer(250)
         self.realtrailbuff = RingBuffer(150)
-        #self.routbuff = RingBuffer(250)
-        self.routbuff = []
+        self.loadpath()
         self.viewpoint = True
         self.view_d = 20.0
         self.view_ang = math.radians(60.0)
@@ -182,6 +189,46 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
         self.rot = 20.0 #degrees
         self.drone3d = OBJFile.OBJFile('gui/quadrotor/blender/quadrotor_CAD2.obj')
+
+    def loadpath(self):
+        a = []
+        pose = jderobot.Pose3DData()
+        for line in open('path.txt','r').readlines():
+            line = line.rstrip('\n')
+            linelist = line.split()
+            #print linelist[0]
+            pose.x = float(linelist[0])
+            pose.y = float(linelist[1])
+            pose.z = float(linelist[2])
+            a.append(pose)
+        print 'pintando ruta?? %f' %a[5].x
+        self.path = np.asarray(a)
+        print 'pintando ruta?? %f' %self.path[5].x
+
+    def paintGL(self):
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        #glMatrixMode(GL_PROJECTION) # Select The Projection Matrix
+        glMatrixMode(GL_MODELVIEW)
+        glLoadIdentity()
+        if self.viewpoint == True :
+            gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,0, 0,0,1)
+            glRotatef( self.rot, 0, 0, 1 )
+        else :
+            gluLookAt( self.dX + self.view_d*math.cos(15) ,
+                        self.dY + self.view_d*math.cos(15) ,
+                        self.dZ + self.view_d*math.sin(15) ,
+                        self.dX, self.dY, self.dZ,
+                        0,0,1)
+        self.axis()
+        self.floor()
+        self.trail()
+        self.realtrail()
+        self.route()
+        if self.pose3d != None :
+            self.drone()
+        self.swapBuffers()
+        print '%f' %self.path[0].x
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
@@ -196,11 +243,6 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.dY = pose3d.y
             self.dZ = pose3d.z
             self.realtrailbuff.append(self.realpose3d)
-
-    def setRoute(self, pose3d):
-        if pose3d != None :
-            #self.routbuff.append(pose3d)
-            self.routbuff = pose3d
 
     def initializeGL(self):
         glClearColor(0.6, 0.6, 0.6, 1);
@@ -221,33 +263,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         glMatrixMode(GL_MODELVIEW)
         gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,0, 0,0,1)
         glRotatef( self.rot, 0, 0, 1 )
-
-
-    def paintGL(self):
-
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        #glMatrixMode(GL_PROJECTION) # Select The Projection Matrix
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-        if self.viewpoint == True :
-            gluLookAt( self.eyex,self.eyey,self.eyez, 0,0,0, 0,0,1)
-            glRotatef( self.rot, 0, 0, 1 )
-        else :
-            gluLookAt( self.dX + self.view_d*math.cos(15) ,
-                        self.dY + self.view_d*math.cos(15) ,
-                        self.dZ + self.view_d*math.sin(15) ,
-                        self.dX, self.dY, self.dZ,
-                        0,0,1)
-        self.axis()
-        self.floor()
-        self.trail()
-        self.realtrail()
-        if self.routbuff != None :
-            self.route()
-        if self.pose3d != None :
-            self.drone()
-        self.swapBuffers()
 
 
     def axis(self):
@@ -315,9 +330,23 @@ class GLWidget(QtOpenGL.QGLWidget):
         #glColor3f(0.7, 0.3, 0.3)
         #for x in range(1,self.routbuff.getlen()-1):
         #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
+
         glLineWidth(2)
         glColor3f(0.7, 0.3, 0.3)
         glPointSize(2)
+        #print '%f' %self.path[0].x
+
+        for i in range(1, self.path.size):
+            pose0 = self.path[i-1]
+            pose1 = self.path[i]
+            glBegin(GL_LINES)
+            #print 'pintando ruta?? %f' %pose1.x
+            glVertex3f(pose1.x,pose1.y,pose1.z)
+            glVertex3f(pose0.x,pose0.y,pose0.z)
+            glEnd()
+            (pose0.x, pose0.y, pose0.z) = (pose1.x, pose1.y, pose1.z)
+        '''
+
         (xx, yy, zz) = self.routbuff[0]
 
         for (x,y,z) in self.routbuff:
@@ -329,6 +358,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             glVertex3f(xx,yy,zz)
             glEnd()
             (xx, yy, zz) = (x, y, z)
+        '''
 
     def drawTrailLine(self, poseA, poseB):
         #Draws line between two given pose3D data structures

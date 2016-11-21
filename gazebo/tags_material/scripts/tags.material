@@ -599,3 +599,20 @@ material Tag36_11_00035
   }
 }
 
+
+material charuco_board
+{
+  receive_shadows on
+
+  technique
+  {
+    pass
+    {
+      ambient 0.5 0.5 0.5 1.00000
+      texture_unit
+      {
+        texture textures/charuco_board.png
+      }
+    }
+  }
+}
