@@ -192,8 +192,8 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def loadpath(self):
         a = []
-        pose = jderobot.Pose3DData()
         for line in open('path.txt','r').readlines():
+            pose = jderobot.Pose3DData()
             line = line.rstrip('\n')
             linelist = line.split()
             #print linelist[0]
@@ -201,9 +201,9 @@ class GLWidget(QtOpenGL.QGLWidget):
             pose.y = float(linelist[1])
             pose.z = float(linelist[2])
             a.append(pose)
-        print 'pintando ruta?? %f' %a[5].x
-        self.path = np.asarray(a)
-        print 'pintando ruta?? %f' %self.path[5].x
+        #print 'pintando ruta?? %f' %a[5].x
+        self.path = list(a)
+        #print 'pintando ruta?? %f' %self.path[5].x
 
     def paintGL(self):
 
@@ -228,7 +228,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         if self.pose3d != None :
             self.drone()
         self.swapBuffers()
-        print '%f' %self.path[0].x
+        #print '%f' %self.path[0].x
 
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
@@ -330,15 +330,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         #glColor3f(0.7, 0.3, 0.3)
         #for x in range(1,self.routbuff.getlen()-1):
         #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
-
+        p = list(self.path)
         glLineWidth(2)
         glColor3f(0.7, 0.3, 0.3)
         glPointSize(2)
         #print '%f' %self.path[0].x
-
-        for i in range(1, self.path.size):
-            pose0 = self.path[i-1]
-            pose1 = self.path[i]
+        for i in range(1, len(p)):
+            pose0 = p[i-1]
+            pose1 = p[i]
             glBegin(GL_LINES)
             #print 'pintando ruta?? %f' %pose1.x
             glVertex3f(pose1.x,pose1.y,pose1.z)
