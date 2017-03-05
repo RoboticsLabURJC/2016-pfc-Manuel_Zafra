@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #[MIT license:]
 #
 # Copyright (c) 2004  Dave Pape    
@@ -22,7 +23,7 @@
 
 import string
 from OpenGL.GL import *
-from Texture2D import *
+from .Texture2D import *
 
 
 class OBJFace:
@@ -45,21 +46,21 @@ class OBJUseMtl:
     def __init__(self, mtl):
         self.material = mtl
     def draw(self):
-        if self.material.has_key('Ka'):
+        if 'Ka' in self.material :
             glMaterialfv(GL_FRONT, GL_AMBIENT, self.material['Ka'])
         else:
             glMaterialfv(GL_FRONT, GL_AMBIENT, [0, 0, 0, 0])
-        if self.material.has_key('Kd'):
+        if 'Kd' in self.material :
             glMaterialfv(GL_FRONT, GL_DIFFUSE, self.material['Kd'])
         else:
             glMaterialfv(GL_FRONT, GL_DIFFUSE, [0, 0, 0, 0])
-        if self.material.has_key('Ks'):
+        if 'Ks' in self.material :
             glMaterialfv(GL_FRONT, GL_SPECULAR, self.material['Ks'])
         else:
             glMaterialfv(GL_FRONT, GL_SPECULAR, [0, 0, 0, 0])
-        if self.material.has_key('Ns'):
+        if 'Ns' in self.material :
             glMaterialf(GL_FRONT, GL_SHININESS, self.material['Ns'])
-        if self.material.has_key('map_Kd'):
+        if 'map_Kd' in self.material :
             self.material['map_Kd'].apply()
         else:
             glDisable(GL_TEXTURE_2D)
@@ -74,22 +75,22 @@ class OBJFile:
         file = open(filename, "r")
         lines = file.readlines()
         for line in lines:
-            values = string.split(line)
+            values = line.split()
             if len(values) < 1:
                 continue
             if values[0] == 'v':
-                x = string.atof(values[1])
-                y = string.atof(values[2])
-                z = string.atof(values[3])
+                x = float(values[1])
+                y = float(values[2])
+                z = float(values[3])
                 self.vertices.append([x,y,z])
             elif values[0] == 'vn':
-                x = string.atof(values[1])
-                y = string.atof(values[2])
-                z = string.atof(values[3])
+                x = float(values[1])
+                y = float(values[2])
+                z = float(values[3])
                 self.normals.append([x,y,z])
             elif values[0] == 'vt':
-                s = string.atof(values[1])
-                t = string.atof(values[2])
+                s = float(values[1])
+                t = float(values[2])
                 self.texcoords.append([s,t])
             elif values[0] == 'mtllib':
                 self.loadMtllib(values[1])
@@ -98,48 +99,50 @@ class OBJFile:
                 texcoords = []
                 norms = []
                 for v in values[1:]:
-                    w = string.split(v,'/')
-                    face.append(string.atoi(w[0]))
+                    #w = string.split(v,'/')
+                    w = v.split('/')
+                    face.append(int(w[0]))
                     if len(w) >= 2 and len(w[1]) > 0:
-                        texcoords.append(string.atoi(w[1]))
+                        texcoords.append(int(w[1]))
                     else:
                         texcoords.append(0)
                     if len(w) >= 3 and len(w[2]) > 0:
-                        norms.append(string.atoi(w[2]))
+                        norms.append(int(w[2]))
                     else:
                         norms.append(0)
                 self.commands.append(OBJFace(face,norms,texcoords,self))
             elif values[0] == 'usemtl':
-                if self.materials.has_key(values[1]):
+                if values[1] in self.materials :
                     self.commands.append(OBJUseMtl(self.materials[values[1]]))
                 else:
-                    print 'Warning: %s trying to use unknown material %s' % (filename, values[1])
+                    print ('Warning: %s trying to use unknown material %s' % (filename, values[1]))
 
     def loadMtllib(self, filename):
         for line in open(filename, "r").readlines():
-            values = string.split(line)
+            values = line.split()
             if len(values) < 1:
                 continue
             if values[0] == 'newmtl':
                 mtl = {}
                 self.materials[values[1]] = mtl
             elif values[0] == 'Ka':
-                r = string.atof(values[1])
-                g = string.atof(values[2])
-                b = string.atof(values[3])
+                r = float(values[1])
+                g = float(values[2])
+                b = float(values[3])
                 mtl['Ka'] = [ r, g, b ]
             elif values[0] == 'Kd':
-                r = string.atof(values[1])
-                g = string.atof(values[2])
-                b = string.atof(values[3])
+                r = float(values[1])
+                g = float(values[2])
+                b = float(values[3])
                 mtl['Kd'] = [ r, g, b ]
             elif values[0] == 'Ks':
-                r = string.atof(values[1])
-                g = string.atof(values[2])
-                b = string.atof(values[3])
+                r = float(values[1])
+                g = float(values[2])
+                b = float(values[3])
                 mtl['Ks'] = [ r, g, b ]
             elif values[0] == 'Ns':
-                n = string.atof(values[1])
+                #n = float(values[1])
+                n = float(values[1])
                 mtl['Ns'] = n
             elif values[0] == 'map_Kd':
                 mtl['map_Kd'] = Texture2D(values[1])

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #[MIT license:]
 #
 # Copyright (c) 2004  Dave Pape
@@ -22,7 +23,7 @@
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import Image
+from PIL import Image
 
 
 class Texture2D:

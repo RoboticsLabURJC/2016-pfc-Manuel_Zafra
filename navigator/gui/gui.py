@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 from PyQt4 import QtGui
 from PyQt4.QtOpenGL import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
-import collada
+from collada import *
+from .OBJFile import OBJFile
+import itertools
 import math
 import jderobot
 import numpy as np
 import sys
 import pickle
-import OBJFile
 import pyqtgraph as pg
 
 
@@ -73,11 +75,16 @@ class Gui(QtGui.QWidget):
         self.poseErrorplot.setRange(yRange=[0,3])
         self.poseErrorplot.showGrid(y=True)
         self.poseErrordata =np.zeros(250) 
-        self.angleErrordata =np.zeros(250) 
         self.poseErrorplot.addLegend()
         self.poseErrorcurve = self.poseErrorplot.plot(self.poseErrordata, pen=(255,0,0),
             name="Pose3D Error")
-        self.angleErrorcurve = self.poseErrorplot.plot(self.angleErrordata, pen=(0,255,0),
+        self.angleErrordata =np.zeros(250) 
+        self.angleErrorplot = self.plotWidget.addPlot()
+        self.angleErrorplot.showAxis('bottom', False)
+        self.angleErrorplot.setRange(yRange=[0,180])
+        self.angleErrorplot.showGrid(y=True)
+        self.angleErrorplot.addLegend()
+        self.angleErrorcurve = self.angleErrorplot.plot(self.angleErrordata, pen=(0,255,0),
             name="Angle Error")
 
         self.ptr = 0      
@@ -166,8 +173,28 @@ class Gui(QtGui.QWidget):
         return d
         
     def angleError(self, pose3d1, pose3d2):
-        e = math.sqrt((pose3d1.q0 - pose3d2.q0)**2 + (pose3d1.q1 - pose3d2.q1)**2 + (pose3d1.q2 - pose3d2.q2)**2 + (pose3d1.q3 - pose3d2.q3)**2)
-        return e
+        (r1,p1,y1) = self.qtorpy(pose3d1)
+        (r2,p2,y2) = self.qtorpy(pose3d2)
+
+        e = math.sqrt((self.angleDiff(r1,r2))**2 + (self.angleDiff(p1,p2))**2 + (self.angleDiff(y1,y2))**2)
+        if (e > math.pi) :
+            e = 2*math.pi - e
+        return math.degrees(e)
+
+    def angleDiff(self, a1, a2):
+        angDifference = a1 - a2
+        while (angDifference < -math.pi):
+            angDifference = angDifference + 2*math.pi
+        while (angDifference > math.pi):
+            angDifference = angDifference - 2*math.pi
+        return angDifference
+
+    def qtorpy(self, pose):
+        #Transforms quaternions to (roll,pitch,yaw) 
+        roll = math.atan2(2*(pose.q0*pose.q1 + pose.q2*pose.q3), 1 - 2*(pose.q1**2 + pose.q2**2))
+        pitch = math.asin(2*(pose.q0*pose.q2 - pose.q3*pose.q1))
+        yaw = math.atan2(2.0*(pose.q0*pose.q3 + pose.q1*2), 1 - 2*(pose.q2*pose.q2 + pose.q3*pose.q3))
+        return (roll,pitch,yaw)  #[degrees]
 
 
 # OPENGL WIDGET CLASS
@@ -180,6 +207,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.realpose3d = None
         self.trailbuff = RingBuffer(250)
         self.realtrailbuff = RingBuffer(150)
+        self.path = []
         self.loadpath()
         self.viewpoint = True
         self.view_d = 20.0
@@ -188,7 +216,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.eyey = 0.0
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
         self.rot = 20.0 #degrees
-        self.drone3d = OBJFile.OBJFile('gui/quadrotor/blender/quadrotor_CAD2.obj')
+        self.drone3d = OBJFile('gui/quadrotor/blender/quadrotor_CAD2.obj')
 
     def loadpath(self):
         a = []
@@ -325,39 +353,20 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.drawTrailLine(self.realtrailbuff.get(x),self.realtrailbuff.get(x+1))
 
     def route(self):
-        #Draws drone's path
-        #glLineWidth(1)
-        #glColor3f(0.7, 0.3, 0.3)
-        #for x in range(1,self.routbuff.getlen()-1):
-        #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
-        p = list(self.path)
         glLineWidth(2)
         glColor3f(0.7, 0.3, 0.3)
-        glPointSize(2)
-        #print '%f' %self.path[0].x
-        for i in range(1, len(p)):
-            pose0 = p[i-1]
-            pose1 = p[i]
+        glPointSize(3)
+        glLineWidth(1)
+        for pose0, pose1 in zip(self.path, self.path[1:]) :
+            glBegin(GL_POINTS)
+            glVertex(pose0.x,pose0.y,pose0.z)
+            glEnd()
             glBegin(GL_LINES)
             #print 'pintando ruta?? %f' %pose1.x
             glVertex3f(pose1.x,pose1.y,pose1.z)
             glVertex3f(pose0.x,pose0.y,pose0.z)
             glEnd()
-            (pose0.x, pose0.y, pose0.z) = (pose1.x, pose1.y, pose1.z)
-        '''
-
-        (xx, yy, zz) = self.routbuff[0]
-
-        for (x,y,z) in self.routbuff:
-            glBegin(GL_POINTS)
-            glVertex(x,y,z)
-            glEnd()
-            glBegin(GL_LINES)
-            glVertex3f(x,y,z)
-            glVertex3f(xx,yy,zz)
-            glEnd()
-            (xx, yy, zz) = (x, y, z)
-        '''
+            #print pose.x
 
     def drawTrailLine(self, poseA, poseB):
         #Draws line between two given pose3D data structures
@@ -367,8 +376,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnd()
 
     def qtoyaw(self, q0,q1,q2,q3):
-        #Transforms quaternions to (yaw,pitch,roll) 
-        yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
+        #Transforms quaternions to yaw
+        yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2**2 + q3**2))
         return math.degrees(yaw)  #[degrees]
 
     def toggleView(self):

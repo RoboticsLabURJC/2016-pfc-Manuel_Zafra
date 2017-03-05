@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys, traceback, Ice
 import jderobot
 import numpy as np
@@ -7,138 +8,112 @@ import math
 class Pilot():
 
     def __init__(self, interface):
+        self.path = np.array([(-5.16,-1.92,1.38),(-4.28,-0.61,1.38),(-3.3,-0.61,1.38),
+                (-2.72,-2.72,1.38),(-2.52,-3.74,1.58),(-2.52,-5.44,1.58),
+                (-1.59,-6.87,1.22),(-1.14,-5.9,1.45),(-2.52,-5.04,1.52)])
+                #(-2.52,-2.34,1.51),(-0.75,-2.34,1.51)]
         self.step = 0
         self.angDiff = 0
         self.pathError = 0
         self.posError = 0
         self.setVel(0.3,0.3)
         self.interface = interface
-        self.path = self.interface.getPath(0)
         self.fullpath = self.loadpath()
-        self.navState = 0
-            # 0 = Start
-            # 1 = Movement
-            # 2 = Close to point
+        self.Vel = 0.2
         self.startCount = 0
+        self.K = 0.25 #yaw adjustment gain rate
 
 
     def loadpath(self):
         a = []
-        pose = jderobot.Pose3DData()
-        pathfile = open('path.txt','r')
-        for line in pathfile.readlines():
+        for line in open('path.txt','r').readlines():
+            pose = jderobot.Pose3DData()
             line = line.rstrip('\n')
             linelist = line.split()
             pose.x = float(linelist[0])
             pose.y = float(linelist[1])
             pose.z = float(linelist[2])
+            pose.q0 = float(linelist[3])
+            #Uso q0 aunque en realidad ahi se gurada el yaw
             a.append(pose)
-        pathfile.close()
-        return np.array(a)
+        self.path = list(a)
 
 
 
     def update(self):
         pose3d = self.interface.getRealPose3D()
-        self.path = self.interface.getPath(self.step)
         self.pilot(pose3d)
 
     def pilot(self, pose3d):
+
         #Calculates drone's movement command
-
-        d = self.distance(pose3d)
-
-        (px,py,pz) = self.path
-
-        ux = (px - pose3d.x) / d
-        uy = (py - pose3d.y) / d
-        uz = (pz - pose3d.z) / d
-
-        alpha = math.degrees(math.atan(uy / ux))
-
-        if px < pose3d.x:
-            if py > pose3d.y:
-                alpha = 90 + alpha #180
-            else:
-                alpha = (180 - alpha)*(-1)
-
-        alpha = math.radians(alpha)
+        dz = (self.path[self.step+1].z - pose3d.z)
+        while(self.distance(pose3d) < 0.1 and dz <0.1):
+            self.step = self.step+1
+        print ("STEP %f" %self.step)
         yaw = self.qtoyaw(pose3d.q0,pose3d.q1,pose3d.q2,pose3d.q3)
 
-        yaw_d = self.angularDirection(yaw, alpha)
+        #Error calculation
+        p = self.path[self.step]
 
-        
-        if self.navState == 0:
-            #0.2 = 11degrees
-            if self.angDiff >= 0.2 :
-                self.setVel(0.1, 0.5)
-            else: #self.angDiff < 0.2
-                self.setVel(0.2, 0.3)
-                self.navState = 1
-            ux = abs(ux)
-            ux += abs(uy)
-            uy = 0.0
+        self.Vel = 0.2
 
-        elif self.navState == 1:
-            if d >= 0.3 :
-                ux = abs(ux)
-                ux += abs(uy)
-                uy = 0.0
-                if self.angDiff <= 0.05 :
-                    self.setVel(0.2, 0.01)
-                else:
-                    self.setVel(0.2, 0.2)
-            else:
-                self.setVel(0.15, 0.0)
-                self.navState = 2
+        ANGe = p.q0 - yaw
+        while (ANGe < -math.pi):
+            ANGe = ANGe + 2*math.pi
+        while (ANGe > math.pi):
+            ANGe = ANGe - 2*math.pi
 
-        elif self.navState == 2:
-            ux = abs(ux)
-            ux += abs(uy)
-            uy = 0.0
-            if self.angDiff <= 0.05 :
-                self.setVel(0.2, 0.01)
-            else:
-                self.setVel(0.2, 0.2)
-
-            if d < 0.1:
-                self.step += 1
-                self.navState = 0
         """
-            if d < 0.1:
-                self.step += 1
-                self.navState = 0
-                self.setVel(0.1, 0.0)
-            else:
-                self.setVel(0.1, 0.0)
-            yaw_d = 0.0
+        A = [[math.cos(yaw), math.sin(yaw), 0],
+            [-math.sin(yaw), math.cos(yaw), 0],
+            [0, 0, 1]]
+        B = [[p.x - pose3d.x], [p.y - pose3d.y], [ANGe]]
+        print "p %f - yaw %f" %(p.q0, yaw)
+        E = np.dot(A,B) # E = [ Xe, Ye, ANGe ]
         """
+        print ("angE %f" %ANGe)
 
-        #######
-        self.Vel = 0.1
-        #######
 
+        #Position prediction
+        L = self.Vel * 0.08
+        Xf = L * math.cos(yaw) + pose3d.x
+        Yf = L * math.sin(yaw) + pose3d.y
+        #print "posicion x,y %f %f" %(pose3d.x,pose3d.y)
+        #print "predicion x,y %f %f" %(Xf,Yf)
+
+        la = - math.sin(yaw)*(p.x-Xf)
+        lb = + math.cos(yaw)*(p.y-Yf)
+        #print "la,lb  %f %f" %(la,lb)
+
+        #Control law
+        LatError = - math.sin(yaw)*(p.x-Xf) + math.cos(yaw)*(p.y-Yf)
+        yawcontrol = math.sin(ANGe) + ((self.K * LatError) / self.Vel)
+        #print "%f + %f" %(math.sin(ANGe),((self.K * LatError) / self.Vel))
+        #print "= yacontrol %f" %yawcontrol
+        #yawcontrol = (yawcontrol / (math.pi/4)) #Normalizar yawcontrol para poder enviarlo
+        #print yawcontrol
+
+        if (math.fabs(dz) > 0.1 and self.distance(pose3d) < 0.07) :
+            self.Vel = 0
+
+        vz = 0
+        uz = (self.path[self.step+1].z - pose3d.z)
+        if (math.fabs(uz) < 1) :
+            vz = uz*0.5
+        else :
+            vz = np.sign(uz)*0.5
+
+        print ("#####")
+        """
         uy = uy * self.Vel
         ux = ux * self.Vel
         uz = uz * self.Vel
         uw = yaw_d * self.AngVel
+        """
 
+        self.interface.sendCMDVel(self.Vel, 0, vz, yawcontrol)
 
-
-        self.interface.sendCMDVel(ux, uy, uz, uw)
-        #self.interface.sendCMDVel(0, 0, 0, 0)
-
-        print 'STEP : %i' %self.step
-        print 'State : %i' %self.navState
-        print ' d = %f' %d
-        #print ' Pz = %f' %pz        
-        #print ' Px = %f' %px
-        #print ' X = %f' %pose3d.x
-        print ' U(x,y,z) = (%f, %f, %f)' %(ux, uy, uz)
-        print ' Uw = %f' %uw
-        #print ' Alpha = %f' %alpha
-        #print ' yaw = %f' %yaw
-        print ' - - - - - - - - - - -'
 
     def setVel(self, v, w):
         self.Vel = v
@@ -150,38 +125,6 @@ class Pilot():
     def setLinVel(self, v):
         self.Vel = v
 
-    def angularDirection(self, yaw, alpha):
-        #Calculates angular direction
-        #Clockwise = 1
-        #Anticlockwise = -1
-        yaw_d = 0
-        if (((alpha >= 0.0) and (yaw >= 0.0)) or ((alpha < 0.0) and (yaw < 0.0))):
-        # alpha+ yaw+ | alpha- yaw-
-            if alpha > yaw :
-                yaw_d = 1   #turn left
-                self.angDiff = alpha - yaw
-            else:
-                yaw_d = -1  #turn right
-                self.angDiff = yaw - alpha
-        else:
-            if (alpha < 0.0):
-            #alpha- yaw+
-                if ((math.pi - abs(alpha)) > yaw) :
-                    self.angDiff = abs(alpha) + yaw
-                    yaw_d = -1   #turn left
-                else:
-                    self.angDiff = 2*math.pi + alpha - yaw
-                    yaw_d = 1  #turn right
-            else:
-            #alpha+ yaw-
-                if ((math.pi - abs(yaw)) > alpha) :
-                    self.angDiff = abs(yaw) + alpha
-                    yaw_d = 1  #turn left
-                else:
-                    self.angDiff = 2*math.pi + yaw - alpha
-                    yaw_d = -1   #turn right
-        return yaw_d
-
     def qtoyaw(self, q0,q1,q2,q3):
         #Transforms quaternions to (yaw,pitch,roll)
         yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
@@ -189,10 +132,29 @@ class Pilot():
 
     def distance(self, pose3d):
         #Distance between drone position and next point
-        (a,b,c) = self.path
-        d = math.sqrt((pose3d.x - a)**2 + (pose3d.y - b)**2 + (pose3d.z - c)**2)
+        path = self.path[self.step]
+        d = math.sqrt((pose3d.x - path.x)**2 + (pose3d.y - path.y)**2) #+ (pose3d.z - path.z)**2)
         return d
 
-    def poseError(self, pose3d1, pose3d2):
-        d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
-        return d
+
+
+
+
+
+    def errormatrix(self, pose3d, yaw):
+        p = self.path[self.step]
+        A = [[math.cos(p.q0), math.sin(p.q0), 0],
+            [-math.sin(p.q0), math.cos(p.q0), 0]
+            [0, 0, 1]]
+        B = [[p.x - pose3d.x], [p.y - pose3d.y], [p.q0 - yaw]]
+        return np.dot(A,B)
+
+
+
+
+
+
+
+
+
+

@@ -7,6 +7,7 @@ import sys, traceback
 import Ice
 import jderobot
 import numpy as np
+import math
 
 t_cycle = 800 # ms
 
@@ -36,7 +37,10 @@ while(pose3DProxy):
     if pose3DProxy:
         pose=pose3DProxy.getPose3DData()
         pathfile = open('path.txt', 'a')
-        pathfile.write('%f %f %f\n' %(pose.x, pose.y, pose.z))
+        roll = math.atan2(2*(pose.q0*pose.q1 + pose.q2*pose.q3), 1 - 2*(pose.q1**2 + pose.q2**2))
+        pitch = math.asin(2*(pose.q0*pose.q2 - pose.q3*pose.q1))
+        yaw = math.atan2(2.0*(pose.q0*pose.q3 + pose.q1*2), 1 - 2*(pose.q2*pose.q2 + pose.q3*pose.q3))
+        pathfile.write('%f %f %f %f %f %f\n' %(pose.x, pose.y, pose.z, roll, pitch, yaw))
         pathfile.close()
     end_time = datetime.now()
 

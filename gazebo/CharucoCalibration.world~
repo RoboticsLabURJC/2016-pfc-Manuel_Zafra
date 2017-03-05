@@ -50,11 +50,11 @@
         <gravity>1</gravity>
       </link>
     </model>
-    <!-- My robots -->
+    <!-- My robots --
     <include>
       <uri>model://ArDrone2</uri>
       <pose>-0 0 0.5 0 0 0</pose>
-    </include>   
+    </include>   -->
     <!-- A global light source -->
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
@@ -72,7 +72,7 @@
     </light>
 
     <model name='board'>
-      <pose>3 0 2 0 1.570796 0</pose>
+      <pose>3 0 2 1.5707 0 1.5707</pose>
       <static>true</static>
       <link name='link'>
         <collision name='collision'>

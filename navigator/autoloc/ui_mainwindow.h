@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.2.1
+** Created by: Qt User Interface Compiler version 5.5.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -120,14 +120,16 @@ public:
         kalmanRdb->setObjectName(QStringLiteral("kalmanRdb"));
         kalmanRdb->setEnabled(false);
         kalmanRdb->setGeometry(QRect(10, 30, 116, 22));
-        kalmanRdb->setChecked(true);
+        kalmanRdb->setChecked(false);
         tempFusionChk = new QCheckBox(tempFusionGrp);
         tempFusionChk->setObjectName(QStringLiteral("tempFusionChk"));
         tempFusionChk->setGeometry(QRect(120, 0, 21, 22));
+        tempFusionChk->setChecked(true);
         weightRdb = new QRadioButton(tempFusionGrp);
         weightRdb->setObjectName(QStringLiteral("weightRdb"));
         weightRdb->setEnabled(false);
         weightRdb->setGeometry(QRect(120, 30, 161, 22));
+        weightRdb->setChecked(true);
         errorBtn = new QPushButton(centralWidget);
         errorBtn->setObjectName(QStringLiteral("errorBtn"));
         errorBtn->setGeometry(QRect(20, 580, 481, 31));
@@ -341,7 +343,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 520, 25));
+        menuBar->setGeometry(QRect(0, 0, 520, 19));
         MainWindow->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindow);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
