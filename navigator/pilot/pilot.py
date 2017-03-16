@@ -21,7 +21,10 @@ class Pilot():
         self.fullpath = self.loadpath()
         self.Vel = 0.2
         self.startCount = 0
-        self.K = 0.25 #yaw adjustment gain rate
+        self.K1 = 0.25 #yaw adjustment gain rate
+        self.tYaw = 0.0 #yaw control in t = t-1
+        self.yawOffset = 2.2 #yaw offset limit
+        self.K2 = 0.2 #yaw adjustment for spike detection
 
 
     def loadpath(self):
@@ -50,13 +53,13 @@ class Pilot():
         dz = (self.path[self.step+1].z - pose3d.z)
         while(self.distance(pose3d) < 0.1 and dz <0.1):
             self.step = self.step+1
-        print ("STEP %f" %self.step)
+        #print ("STEP %f" %self.step)
         yaw = self.qtoyaw(pose3d.q0,pose3d.q1,pose3d.q2,pose3d.q3)
+
+        self.Vel = 0.2
 
         #Error calculation
         p = self.path[self.step]
-
-        self.Vel = 0.2
 
         ANGe = p.q0 - yaw
         while (ANGe < -math.pi):
@@ -72,7 +75,7 @@ class Pilot():
         print "p %f - yaw %f" %(p.q0, yaw)
         E = np.dot(A,B) # E = [ Xe, Ye, ANGe ]
         """
-        print ("angE %f" %ANGe)
+        #print ("angE %f" %ANGe)
 
 
         #Position prediction
@@ -88,11 +91,19 @@ class Pilot():
 
         #Control law
         LatError = - math.sin(yaw)*(p.x-Xf) + math.cos(yaw)*(p.y-Yf)
-        yawcontrol = math.sin(ANGe) + ((self.K * LatError) / self.Vel)
-        #print "%f + %f" %(math.sin(ANGe),((self.K * LatError) / self.Vel))
+        yawcontrol = math.sin(ANGe) + ((self.K1 * LatError) / self.Vel)
+        #print "%f + %f" %(math.sin(ANGe),((self.K1 * LatError) / self.Vel))
         #print "= yacontrol %f" %yawcontrol
         #yawcontrol = (yawcontrol / (math.pi/4)) #Normalizar yawcontrol para poder enviarlo
-        #print yawcontrol
+        print (yawcontrol)
+
+
+        #SPIKE DETECTION
+        if (math.fabs(yawcontrol) - math.fabs(self.tYaw)) > self.yawOffset :
+            adjust = math.fabs(self.tYaw) - (self.K2 * math.fabs(self.tYAw))
+            yawcontrol = np.sign(yawcontrol) * adjust
+
+
 
         if (math.fabs(dz) > 0.1 and self.distance(pose3d) < 0.07) :
             self.Vel = 0
@@ -111,7 +122,7 @@ class Pilot():
         uz = uz * self.Vel
         uw = yaw_d * self.AngVel
         """
-
+        self.tYaw = yawcontrol
         self.interface.sendCMDVel(self.Vel, 0, vz, yawcontrol)
 
 

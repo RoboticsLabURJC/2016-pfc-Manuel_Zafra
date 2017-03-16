@@ -1,3 +1,6 @@
+#NOTE: AprilTags images in the 'textures' folder are rotated 90º anticlockwise (except boards)
+#so the textures are loaded with the correct orientation
+
 material Tag36_11_00000
 {
   receive_shadows off
