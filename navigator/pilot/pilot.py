@@ -18,13 +18,14 @@ class Pilot():
         self.posError = 0
         self.setVel(0.3,0.3)
         self.interface = interface
-        self.fullpath = self.loadpath()
+        self.loadpath()
         self.Vel = 0.2
         self.startCount = 0
         self.K1 = 0.25 #yaw adjustment gain rate
         self.tYaw = 0.0 #yaw control in t = t-1
-        self.yawOffset = 2.2 #yaw offset limit
-        self.K2 = 0.2 #yaw adjustment for spike detection
+        self.yawOffset = 0.7 #yaw offset limit
+        self.K2 = 0.05 #yaw adjustment for spike detection
+        self.tpose = jderobot.Pose3DData() #pose in t = t-1
 
 
     def loadpath(self):
@@ -37,26 +38,40 @@ class Pilot():
             pose.y = float(linelist[1])
             pose.z = float(linelist[2])
             pose.q0 = float(linelist[3])
-            #Uso q0 aunque en realidad ahi se gurada el yaw
+            #Uso q0 aunque en realidad ahi se guarada el yaw
             a.append(pose)
         self.path = list(a)
 
 
 
     def update(self):
+        #pose3d = self.interface.getPose3D()
         pose3d = self.interface.getRealPose3D()
         self.pilot(pose3d)
 
     def pilot(self, pose3d):
 
         #Calculates drone's movement command
-        dz = (self.path[self.step+1].z - pose3d.z)
-        while(self.distance(pose3d) < 0.1 and dz <0.1):
+        #dz = (self.path[self.step+1].z - pose3d.z)
+        while(self.distance(pose3d, self.path[self.step]) < 0.15):
             self.step = self.step+1
         #print ("STEP %f" %self.step)
         yaw = self.qtoyaw(pose3d.q0,pose3d.q1,pose3d.q2,pose3d.q3)
 
-        self.Vel = 0.2
+
+        #Cálculo de vector al punto
+        Vx = self.path[self.step].x - pose3d.x
+        Vy = self.path[self.step].y - pose3d.y
+        Vz = self.path[self.step].z - pose3d.z
+        #Cálculo del vector unitario
+        module = self.module(Vx, Vy, Vz)
+        ux = Vx/module
+        uy = Vy/module
+        uz = Vz/module #Componente unitaria velocidad Vz
+        uxy = math.sqrt(ux**2 + uy**2) #Componente unitaria velocidad Vx
+
+        xVel = uxy * self.Vel
+        zVel = uz * self.Vel
 
         #Error calculation
         p = self.path[self.step]
@@ -79,7 +94,7 @@ class Pilot():
 
 
         #Position prediction
-        L = self.Vel * 0.08
+        L = xVel * 0.08 #L= travelled distance in an iteration
         Xf = L * math.cos(yaw) + pose3d.x
         Yf = L * math.sin(yaw) + pose3d.y
         #print "posicion x,y %f %f" %(pose3d.x,pose3d.y)
@@ -91,8 +106,8 @@ class Pilot():
 
         #Control law
         LatError = - math.sin(yaw)*(p.x-Xf) + math.cos(yaw)*(p.y-Yf)
-        yawcontrol = math.sin(ANGe) + ((self.K1 * LatError) / self.Vel)
-        #print "%f + %f" %(math.sin(ANGe),((self.K1 * LatError) / self.Vel))
+        yawcontrol = math.sin(ANGe) + ((self.K1 * LatError) / xVel)
+        #print "%f + %f" %(math.sin(ANGe),((self.K1 * LatError) / xVel))
         #print "= yacontrol %f" %yawcontrol
         #yawcontrol = (yawcontrol / (math.pi/4)) #Normalizar yawcontrol para poder enviarlo
         print (yawcontrol)
@@ -100,20 +115,10 @@ class Pilot():
 
         #SPIKE DETECTION
         if (math.fabs(yawcontrol) - math.fabs(self.tYaw)) > self.yawOffset :
-            adjust = math.fabs(self.tYaw) - (self.K2 * math.fabs(self.tYAw))
+            adjust = math.fabs(self.tYaw) - (self.K2 * math.fabs(self.tYaw))
             yawcontrol = np.sign(yawcontrol) * adjust
 
 
-
-        if (math.fabs(dz) > 0.1 and self.distance(pose3d) < 0.07) :
-            self.Vel = 0
-
-        vz = 0
-        uz = (self.path[self.step+1].z - pose3d.z)
-        if (math.fabs(uz) < 1) :
-            vz = uz*0.5
-        else :
-            vz = np.sign(uz)*0.5
 
         print ("#####")
         """
@@ -123,7 +128,13 @@ class Pilot():
         uw = yaw_d * self.AngVel
         """
         self.tYaw = yawcontrol
-        self.interface.sendCMDVel(self.Vel, 0, vz, yawcontrol)
+        self.interface.sendCMDVel(xVel, 0, zVel, yawcontrol)
+
+
+        #Final position prediction
+        self.tpose.x = L * math.cos(yawcontrol) + pose3d.x
+        self.tpose.y = L * math.sin(yawcontrol) + pose3d.y
+        self.tpose.z = zVel*0.08 + pose3d.z
 
 
     def setVel(self, v, w):
@@ -141,14 +152,14 @@ class Pilot():
         yaw = math.atan2(2.0*(q0*q3 + q1*2), 1 - 2*(q2*q2 + q3*q3));
         return yaw  #[-pi,pi]
 
-    def distance(self, pose3d):
+    def distance(self, pose3d1, pose3d2):
         #Distance between drone position and next point
-        path = self.path[self.step]
-        d = math.sqrt((pose3d.x - path.x)**2 + (pose3d.y - path.y)**2) #+ (pose3d.z - path.z)**2)
+        d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.y - pose3d2.y)**2 + (pose3d1.z - pose3d2.z)**2)
         return d
 
 
-
+    def module(self,x,y,z):
+        return math.sqrt((x**2)+(y**2)+(z**2))
 
 
 
