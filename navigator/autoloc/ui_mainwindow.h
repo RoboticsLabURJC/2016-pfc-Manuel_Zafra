@@ -123,8 +123,9 @@ public:
         kalmanRdb->setChecked(false);
         tempFusionChk = new QCheckBox(tempFusionGrp);
         tempFusionChk->setObjectName(QStringLiteral("tempFusionChk"));
+        tempFusionChk->setEnabled(true);
         tempFusionChk->setGeometry(QRect(120, 0, 21, 22));
-        tempFusionChk->setChecked(true);
+        tempFusionChk->setChecked(false);
         weightRdb = new QRadioButton(tempFusionGrp);
         weightRdb->setObjectName(QStringLiteral("weightRdb"));
         weightRdb->setEnabled(false);

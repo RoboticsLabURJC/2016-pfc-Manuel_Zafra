@@ -8,12 +8,10 @@ from OpenGL.GLU import *
 from PyQt4 import QtCore, QtGui, QtOpenGL
 from collada import *
 from .OBJFile import OBJFile
-import itertools
 import math
 import jderobot
 import numpy as np
 import sys
-import pickle
 import pyqtgraph as pg
 
 
@@ -23,37 +21,44 @@ class Gui(QtGui.QWidget):
         super(Gui, self).__init__()
 
         self.setWindowTitle('Drone Navigator')
-        self.setMinimumSize(740,780)
-        self.setMaximumSize(740,780)
+        self.setMinimumSize(750,800)
+        self.setMaximumSize(750,800)
 
         self.startButton = QtGui.QPushButton("Start")
-        self.startButton.setMinimumSize(250,40)
-        self.startButton.setMaximumSize(250,40)
+        self.startButton.setMinimumSize(250,38)
+        self.startButton.setMaximumSize(250,38)
         self.startButton.setParent(self)
         self.startButton.clicked.connect(self.startdrone)
 
         self.pauseButton = QtGui.QPushButton("Pause")
-        self.pauseButton.setMinimumSize(120,40)
-        self.pauseButton.setMaximumSize(120,40)
+        self.pauseButton.setMinimumSize(250,38)
+        self.pauseButton.setMaximumSize(250,38)
         self.pauseButton.setParent(self)
         self.pauseButton.clicked.connect(self.pausedrone)
 
         self.landButton = QtGui.QPushButton("Land")
-        self.landButton.setMinimumSize(120,40)
-        self.landButton.setMaximumSize(120,40)
+        self.landButton.setMinimumSize(120,38)
+        self.landButton.setMaximumSize(120,38)
         self.landButton.setParent(self)
         self.landButton.clicked.connect(self.landdrone)
 
+        self.takeoffButton = QtGui.QPushButton("Take Off")
+        self.takeoffButton.setMinimumSize(120,38)
+        self.takeoffButton.setMaximumSize(120,38)
+        self.takeoffButton.setParent(self)
+        self.takeoffButton.clicked.connect(self.takeoffdrone)
+
         self.changeView = QtGui.QPushButton("Change View")
-        self.changeView.setMinimumSize(250,40)
-        self.changeView.setMaximumSize(250,40)
+        self.changeView.setMinimumSize(120,38)
+        self.changeView.setMaximumSize(120,38)
         self.changeView.setParent(self)
         self.changeView.clicked.connect(self.changeViewpoint)
 
-        self.posText = QtGui.QLabel(self)
-        self.posText.setMinimumSize(250,60)
-        self.posText.setMaximumSize(250,60)
-        self.posText.show()
+        self.toggleCam = QtGui.QPushButton("Toggle Cam")
+        self.toggleCam.setMinimumSize(120,38)
+        self.toggleCam.setMaximumSize(120,38)
+        self.toggleCam.setParent(self)
+        self.toggleCam.clicked.connect(self.togglecam)
 
         self.glWidget = GLWidget()
         self.glWidget.setMinimumSize(450,450)
@@ -90,24 +95,37 @@ class Gui(QtGui.QWidget):
         self.ptr = 0      
         self.connect(self, QtCore.SIGNAL("NewImg"), self.update_img)
 
-        HButtonLayout = QtGui.QHBoxLayout()
-        HButtonLayout.addStretch(1)
-        HButtonLayout.addWidget(self.landButton)
-        HButtonLayout.addStretch(1)
-        HButtonLayout.addWidget(self.pauseButton)
-        HButtonLayout.addStretch(1)
+        HButtonLayout1 = QtGui.QHBoxLayout()
+        HButtonLayout1.addStretch(1)
+        HButtonLayout1.addWidget(self.takeoffButton)
+        HButtonLayout1.addStretch(1)
+        HButtonLayout1.addWidget(self.landButton)
+        HButtonLayout1.addStretch(1)
+
+        HButtonLayout2 = QtGui.QHBoxLayout()
+        HButtonLayout2.addStretch(1)
+        HButtonLayout2.addWidget(self.changeView)
+        HButtonLayout2.addStretch(1)
+        HButtonLayout2.addWidget(self.toggleCam)
+        HButtonLayout2.addStretch(1)
+
+        VLayoutButtons = QtGui.QVBoxLayout()
+        VLayoutButtons.addStretch(1)
+        VLayoutButtons.addWidget(self.startButton)
+        VLayoutButtons.addStretch(1)
+        VLayoutButtons.addWidget(self.pauseButton)
+        VLayoutButtons.addStretch(1)
+        VLayoutButtons.addLayout(HButtonLayout1)
+        VLayoutButtons.addStretch(1)
+        VLayoutButtons.addLayout(HButtonLayout2)
+        VLayoutButtons.addStretch(1)
+
 
         VLayout = QtGui.QVBoxLayout()
         VLayout.addStretch(1)
         VLayout.addWidget(self.imgLabel)
         VLayout.addStretch(1)
-        VLayout.addWidget(self.startButton)
-        VLayout.addStretch(1)
-        VLayout.addLayout(HButtonLayout)
-        VLayout.addStretch(1)
-        VLayout.addWidget(self.changeView)
-        VLayout.addStretch(1)
-        VLayout.addWidget(self.posText)
+        VLayout.addLayout(VLayoutButtons)
         VLayout.addStretch(1)
 
         HLayout = QtGui.QHBoxLayout()
@@ -142,6 +160,12 @@ class Gui(QtGui.QWidget):
     def changeViewpoint(self):
         self.glWidget.toggleView()
 
+    def takeoffdrone(self):
+        self.interface.takeoffdrone()
+
+    def togglecam(self):
+        self.interface.togglecam()
+
     def update(self):
         pose3d = self.interface.getPose3D()
         self.glWidget.setPose3D(pose3d)
@@ -149,8 +173,8 @@ class Gui(QtGui.QWidget):
         self.glWidget.setRealPose3D(realpose3d)
         self.glWidget.update()
         image = self.interface.getImage()
-        self.posText.setText("Position: \n(%f, %f, %f)"
-            %(pose3d.x, pose3d.y, pose3d.z))
+        #self.posText.setText("Position: \n(%f, %f, %f)"
+        #    %(pose3d.x, pose3d.y, pose3d.z))
         if self.ptr == 249 :
             self.poseErrordata = np.roll(self.poseErrordata, -1)
             self.angleErrordata = np.roll(self.angleErrordata, -1)

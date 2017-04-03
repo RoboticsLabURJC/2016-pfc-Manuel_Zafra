@@ -10,6 +10,7 @@ from interfaces.threadint import ThreadInt
 from pilot.pilot import Pilot
 from pilot.threadpilot import ThreadPilot
 
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == '__main__':

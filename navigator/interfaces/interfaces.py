@@ -78,12 +78,7 @@ class Interfaces():
             exit()
             status = 1
 
-        if self.extraProxy:
-            self.lock.acquire()
-            self.extraProxy.toggleCam()
-            self.lock.release()
-
-        self.pause = False
+        self.pause = True
         #self.takeoff()
 
     def update(self):
@@ -165,7 +160,7 @@ class Interfaces():
             cmd.linearY=vy
             cmd.linearZ=vz
             cmd.angularZ=yaw
-            cmd.angularX=cmd.angularY=1.0
+            cmd.angularX=cmd.angularY=0.0
         else:
             cmd=jderobot.CMDVelData()
             cmd.linearX=0
@@ -181,18 +176,28 @@ class Interfaces():
 
     def startdrone(self):
         self.pause = False
-        if self.extraProxy:
-            self.lock.acquire()
-            self.extraProxy.takeoff()
-            self.lock.release()
 
     def pausedrone(self):
         self.pause = True
 
     def landdrone(self):
+        self.pause = True
         if self.extraProxy:
             self.lock.acquire()
             self.extraProxy.land()
             self.lock.release()
-        #self.pause = True
+
+    def togglecam(self):
+        if self.extraProxy:
+            self.lock.acquire()
+            self.extraProxy.toggleCam()
+            self.lock.release()
+
+    def takeoffdrone(self):
+        self.pause = True
+        if self.extraProxy:
+            self.lock.acquire()
+            self.extraProxy.takeoff()
+            self.lock.release()
+
 
