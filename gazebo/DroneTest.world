@@ -386,3 +386,5 @@
       </link>
       <static>0</static>
     </model>
+    </world>
+</sdf>

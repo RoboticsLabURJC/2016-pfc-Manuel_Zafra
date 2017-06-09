@@ -603,7 +603,7 @@ material Tag36_11_00035
 }
 
 
-material charuco_board
+material chessboard
 {
   receive_shadows on
 
@@ -614,7 +614,7 @@ material charuco_board
       ambient 0.5 0.5 0.5 1.00000
       texture_unit
       {
-        texture textures/charuco_board.png
+        texture textures/calibration.png
       }
     }
   }
