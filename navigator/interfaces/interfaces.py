@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys, traceback, Ice
+import easyiceconfig as EasyIce
 import jderobot
 import numpy as np
 import threading
@@ -18,23 +19,16 @@ class Interfaces():
     def __init__(self):
         self.lock = threading.Lock()
         try:
-            ic = Ice.initialize(sys.argv)
+            ic = EasyIce.initialize(sys.argv)
             properties = ic.getProperties()
 
             #Connection to ICE interfaces
-            #------- REALPOSE3D ---------
-            baserealpose3D = ic.propertyToProxy("Navigator.RealPose3D.Proxy")
-            self.realpose3DProxy=jderobot.Pose3DPrx.checkedCast(baserealpose3D)
-            if self.realpose3DProxy:
-                self.realpose=jderobot.Pose3DData()
-            else:
-                print ('Interface pose3D not connected')
 
             #------- POSE3D ---------
             basepose3D = ic.propertyToProxy("Navigator.Pose3D.Proxy")
             self.pose3DProxy=jderobot.Pose3DPrx.checkedCast(basepose3D)
             if self.pose3DProxy:
-                self.realpose=jderobot.Pose3DData()
+                self.pose=jderobot.Pose3DData()
             else:
                 print ('Interface pose3D not connected')
 
@@ -85,7 +79,6 @@ class Interfaces():
         self.lock.acquire()
         self.updateCamera()
         self.updateNavdata()
-        self.updateRealPose()
         self.updatePose()
         self.lock.release()
 
@@ -99,10 +92,6 @@ class Interfaces():
         if self.navdataProxy:
             self.navdata=self.navdataProxy.getNavdata()
 
-    def updateRealPose(self):
-        if self.realpose3DProxy:
-            self.realpose=self.realpose3DProxy.getPose3DData()
-
     def updatePose(self):
         if self.pose3DProxy:
             self.pose=self.pose3DProxy.getPose3DData()
@@ -111,15 +100,6 @@ class Interfaces():
         if self.navdataProxy:
             self.lock.acquire()
             tmp=self.navdata
-            self.lock.release()
-            return tmp
-
-        return None
-
-    def getRealPose3D(self):
-        if self.realpose3DProxy:
-            self.lock.acquire()
-            tmp=self.realpose
             self.lock.release()
             return tmp
         else:
@@ -142,8 +122,8 @@ class Interfaces():
             img.shape = self.height, self.width, 3
             self.lock.release()
             return img;
-
-        return None
+        else:
+            return None
 
     '''
     def takeoff(self):

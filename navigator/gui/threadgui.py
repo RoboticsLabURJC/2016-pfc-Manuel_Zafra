@@ -5,7 +5,7 @@ import threading
 import time
 from datetime import datetime
 
-t_cycle = 50 # ms
+t_cycle = 60 # ms
 
 class ThreadGui(threading.Thread):
 

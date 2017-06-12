@@ -68,6 +68,8 @@ class Gui(QtGui.QWidget):
         self.imgLabel=QtGui.QLabel(self)
         self.imgLabel.setMinimumSize(250,250)
         self.imgLabel.setMaximumSize(250,250)
+        self.imgLabel.setScaledContents(True)
+        self.imgLabel.setMinimumSize(1,1)
         self.imgLabel.show()
 
         self.plotWidget = pg.GraphicsWindow()
@@ -169,8 +171,6 @@ class Gui(QtGui.QWidget):
     def update(self):
         pose3d = self.interface.getPose3D()
         self.glWidget.setPose3D(pose3d)
-        realpose3d = self.interface.getRealPose3D()
-        self.glWidget.setRealPose3D(realpose3d)
         self.glWidget.update()
         image = self.interface.getImage()
         #self.posText.setText("Position: \n(%f, %f, %f)"
@@ -179,9 +179,9 @@ class Gui(QtGui.QWidget):
             self.poseErrordata = np.roll(self.poseErrordata, -1)
             self.angleErrordata = np.roll(self.angleErrordata, -1)
         else : self.ptr += 1
-        self.poseErrordata[self.ptr] = self.poseError(realpose3d, pose3d)
-        self.angleErrordata[self.ptr] = self.angleError(realpose3d, pose3d)
-        if image != None:
+        #self.poseErrordata[self.ptr] = self.poseError(realpose3d, pose3d)
+        #self.angleErrordata[self.ptr] = self.angleError(realpose3d, pose3d)
+        if not (image is None):
             self.emit(QtCore.SIGNAL("NewImg"), image)
 
     def update_img(self, image):
@@ -189,13 +189,15 @@ class Gui(QtGui.QWidget):
         #size=QtCore.QSize(image.shape[1],image.shape[0])
         #self.imgLabel.resize(size)
         self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
+
         self.poseErrorcurve.setData(self.poseErrordata)
         self.angleErrorcurve.setData(self.angleErrordata)
 
     def poseError(self, pose3d1, pose3d2):
         d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
         return d
-        
+
+    '''
     def angleError(self, pose3d1, pose3d2):
         (r1,p1,y1) = self.qtorpy(pose3d1)
         (r2,p2,y2) = self.qtorpy(pose3d2)
@@ -212,6 +214,17 @@ class Gui(QtGui.QWidget):
         while (angDifference > math.pi):
             angDifference = angDifference - 2*math.pi
         return angDifference
+    '''
+
+    def angleError(self, pose3d1,pose3d2):
+        (r1,p1,y1) = self.qtorpy(pose3d1)
+        (r2,p2,y2) = self.qtorpy(pose3d2)
+        ANGe = y1 - y2
+        while (ANGe < -math.pi):
+            ANGe = ANGe + 2*math.pi
+        while (ANGe > math.pi):
+            ANGe = ANGe - 2*math.pi
+        return ANGe
 
     def qtorpy(self, pose):
         #Transforms quaternions to (roll,pitch,yaw) 
@@ -228,9 +241,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
         self.pose3d = None
-        self.realpose3d = None
-        self.trailbuff = RingBuffer(250)
-        self.realtrailbuff = RingBuffer(150)
+        self.trailbuff = RingBuffer(300)
         self.path = []
         self.loadpath()
         self.viewpoint = True
@@ -275,7 +286,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.axis()
         self.floor()
         self.trail()
-        self.realtrail()
         self.route()
         if self.pose3d != None :
             self.drone()
@@ -285,16 +295,10 @@ class GLWidget(QtOpenGL.QGLWidget):
     def setPose3D(self, pose3d):
         self.pose3d = pose3d
         if self.pose3d != None :
-            self.trailbuff.append(self.pose3d)
-        
-
-    def setRealPose3D(self, pose3d):
-        self.realpose3d = pose3d
-        if self.realpose3d != None :
             self.dX = pose3d.x
             self.dY = pose3d.y
             self.dZ = pose3d.z
-            self.realtrailbuff.append(self.realpose3d)
+            self.trailbuff.append(self.pose3d)
 
     def initializeGL(self):
         glClearColor(0.6, 0.6, 0.6, 1);
@@ -353,8 +357,20 @@ class GLWidget(QtOpenGL.QGLWidget):
     def drone(self):
         #Draws drone position
         glDisable(GL_COLOR_MATERIAL)
-        yaw = self.qtoyaw(self.realpose3d.q0,self.realpose3d.q1,
-            self.realpose3d.q2,self.realpose3d.q3)
+        yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,
+            self.pose3d.q2,self.pose3d.q3)
+
+        #HAY QUE CORREGIR YAW DE AUTOLOC
+        '''
+        yaw += (math.pi / 2)
+        while (yaw < -math.pi):
+            yaw += 2*math.pi
+        while (yaw > math.pi):
+            yaw -= 2*math.pi
+        '''
+
+
+
         glPushMatrix();
         glTranslate(self.dX,self.dY,self.dZ)
         glRotatef(yaw,0,0,1)
@@ -368,13 +384,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         glColor3f(0.2, 0.5, 0.2)
         for x in range(1,self.trailbuff.getlen()-1):
             self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
-
-    def realtrail(self):
-        #Draws drone's movement trail
-        glLineWidth(2)
-        glColor3f(0.15, 0.15, 0.5)
-        for x in range(1,self.realtrailbuff.getlen()-1):
-            self.drawTrailLine(self.realtrailbuff.get(x),self.realtrailbuff.get(x+1))
 
     def route(self):
         glLineWidth(2)
