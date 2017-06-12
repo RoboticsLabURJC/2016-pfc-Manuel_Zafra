@@ -5,6 +5,7 @@ import numpy as np
 import threading
 import math
 from pilot.kalman import Kalman
+from scipy.signal import savgol_filter as sgfilter
 
 class Pilot():
 
@@ -25,12 +26,12 @@ class Pilot():
         self.Vel = 0.2
         self.startCount = 0
         self.K1 = 0.2 #yaw adjustment gain rate
-        self.tYaw = None #yaw control in t = t-1
-        self.yawOffset = 0.5 #yaw offset limit
+        self.tYaw = 0.0 #yaw control in t = t-1
+        self.yawOffset = 0.2 #yaw offset limit
         self.K2 = 0.05 #yaw adjustment for spike detection
         self.tpose = jderobot.Pose3DData() #pose in t = t-1
         self.kalman = Kalman()
-        self.yawFilterArray = np.zeros(4,float)
+        self.yawFilterArray = np.zeros(50,float)
 
 
     def loadpath(self):
@@ -59,16 +60,18 @@ class Pilot():
 
     def pilot(self, pose3d):
 
-        yaw = self.qtoyaw(pose3d.q0,pose3d.q1,pose3d.q2,pose3d.q3)
+        #yaw = self.qtoyaw(pose3d.q0,pose3d.q1,pose3d.q2,pose3d.q3)
+        yaw =  pose3d.q3
+
 
         #HAY QUE CORREGIR YAW DE AUTOLOC
-        '''
         yaw += (math.pi / 2)
         while (yaw < -math.pi):
             yaw += 2*math.pi
         while (yaw > math.pi):
             yaw -= 2*math.pi
-        '''
+
+        #print(yaw)
 
         #Kalman filter
         #(pose3d.x,pose3d.y,pose3d.z) = self.kalman.filter(pose3d.x,pose3d.y,pose3d.z)
@@ -77,7 +80,7 @@ class Pilot():
         #Calculates drone's movement command
         #dz = (self.path[self.step+1].z - pose3d.z)
 
-        while(self.distance(pose3d, self.path[self.step]) < 0.15):
+        while(self.distance(pose3d, self.path[self.step]) < 0.3):
             self.step = self.step+1
             if self.step == self.pathlen :
                 self.step = 0
@@ -111,8 +114,8 @@ class Pilot():
             ANGe = ANGe + 2*math.pi
         while (ANGe > math.pi):
             ANGe = ANGe - 2*math.pi
-        print (self.step)
-        print (math.degrees(ANGYAW), math.degrees(yaw), math.degrees(ANGe))
+        #print (self.step)
+        #print (math.degrees(ANGYAW), math.degrees(yaw), math.degrees(ANGe))
 
         """
         A = [[math.cos(yaw), math.sin(yaw), 0],
@@ -142,24 +145,24 @@ class Pilot():
         #print "%f + %f" %(math.sin(ANGe),((self.K1 * LatError) / xVel))
         #print "= yacontrol %f" %yawcontrol
         #yawcontrol = (yawcontrol / (math.pi/4)) #Normalizar yawcontrol para poder enviarlo
-        print (ANGe)
+        #print (ANGe)
         
         #if self.tYaw is None:
         #   self.tYaw = yawcontrol
         #SPIKE DETECTION
-        
-        """
+        '''
+        print (yawcontrol, self.tYaw)
         if (math.fabs(yawcontrol - self.tYaw) > self.yawOffset) :
             adjust = math.fabs(self.tYaw) - (self.K2 * math.fabs(self.tYaw))
             yawcontrol = np.sign(yawcontrol) * adjust
-            print (adjust)
-            print (yawcontrol)
-        """
+            print (yawcontrol, adjust)
+        print ('#')
+        '''
 
         #Guardamos las cuatro últimos ajustes de yaw
-        self.yawFilterArray = np.roll(self.yawFilterArray,1)
+        self.yawFilterArray = np.roll(self.yawFilterArray,-1)
 
-        self.yawFilterArray[0] = yawcontrol
+        self.yawFilterArray[self.yawFilterArray.size - 1] = yawcontrol
         #if (math.fabs(yawcontrol - self.tYaw) > self.yawOffset) :
 
         #yawcontrol = self.YawTemporalFilter()
@@ -172,9 +175,14 @@ class Pilot():
         uw = yaw_d * self.AngVel
         """
         self.tYaw = yawcontrol
+        print (yawcontrol)
+        yawcontrol = sgfilter(self.yawFilterArray, 35, 5)[self.yawFilterArray.size - 1]
+        print (yawcontrol)
+        print ('·')
+        #print (yawcontrol)
 
         #print (yawcontrol, xVel)
-        self.interface.sendCMDVel(xVel, 0, zVel, ANGe)
+        self.interface.sendCMDVel(xVel, 0, zVel, yawcontrol)
 
 
         #Final position prediction

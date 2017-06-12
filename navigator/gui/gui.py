@@ -357,17 +357,17 @@ class GLWidget(QtOpenGL.QGLWidget):
     def drone(self):
         #Draws drone position
         glDisable(GL_COLOR_MATERIAL)
-        yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,
-            self.pose3d.q2,self.pose3d.q3)
+        #yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,
+        #    self.pose3d.q2,self.pose3d.q3)
 
         #HAY QUE CORREGIR YAW DE AUTOLOC
-        '''
+        yaw = self.pose3d.q2
         yaw += (math.pi / 2)
         while (yaw < -math.pi):
             yaw += 2*math.pi
         while (yaw > math.pi):
             yaw -= 2*math.pi
-        '''
+        yaw = math.degrees(yaw)
 
 
 
