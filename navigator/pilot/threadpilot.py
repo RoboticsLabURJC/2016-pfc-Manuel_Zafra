@@ -3,7 +3,7 @@ import threading
 import time
 from datetime import datetime
 
-t_cycle = 80 # ms
+t_cycle = 100 # ms
 
 class ThreadPilot(threading.Thread):
 

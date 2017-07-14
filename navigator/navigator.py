@@ -15,15 +15,22 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 if __name__ == '__main__':
 
+    if not ( (len(sys.argv) == 3)
+        and ((sys.argv[2] == 'sim') or (sys.argv[2] == 'real')) ):
+
+        print (sys.argv[2])
+        print ('Usage: navigator [iceconf.cfg] [sim|real]')
+        sys.exit()
+
     app = QtGui.QApplication(sys.argv)
 
-    interface = Interfaces()
+    interface = Interfaces(sys.argv[2])
 
-    window = Gui()
+    window = Gui(sys.argv[2])
     window.setInterface(interface)
     window.show()
 
-    pilot = Pilot(interface)
+    pilot = Pilot(interface, sys.argv[2])
 
     t1 = ThreadInt(interface)  
     t1.start()

@@ -2,7 +2,7 @@
   <world name='GrannyAnnie'>
     <light name='sun' type='directional'>
       <cast_shadows>1</cast_shadows>
-      <pose frame=''>-4 -2 10 0 -0 0</pose>
+      <pose frame=''>4 2 10 0 -0 0</pose>
       <diffuse>0.9 0.9 0.9 1</diffuse>
       <specular>0.2 0.2 0.2 1</specular>
       <attenuation>
@@ -15,7 +15,7 @@
       <cast_shadows>0</cast_shadows>
     </light>
     <light name='point_light1' type='point'>
-      <pose frame=''>-2.5 1 3 0 -0 0</pose>
+      <pose frame=''>2.5 1 3 0 -0 0</pose>
       <diffuse>0.6 0.6 0.6 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -28,7 +28,7 @@
       <direction>0 0 -1</direction>
     </light>
     <light name='point_light2' type='point'>
-      <pose frame=''>-5.68 -3.81 3 0 -0 0</pose>
+      <pose frame=''>5.68 3.81 3 0 -0 0</pose>
       <diffuse>0.6 0.6 0.6 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -41,7 +41,7 @@
       <direction>0 0 -1</direction>
     </light>
     <light name='point_light3' type='point'>
-      <pose frame=''>-1.23 -6 3 0 -0 0</pose>
+      <pose frame=''>1.23 6 3 0 -0 0</pose>
       <diffuse>0.6 0.6 0.6 1</diffuse>
       <specular>0.1 0.1 0.1 1</specular>
       <attenuation>
@@ -524,10 +524,10 @@
           <update_rate>20</update_rate>
         </sensor>
       </link>
-      <pose frame=''>-3 1 0.5 0 -0 0</pose>
+      <pose frame=''>4 0.7 0.5 0 -0 -3.14119</pose>
     </model>
-    <model name='tag_0'>
-      <pose frame=''>0 0 1 1.5708 0 -1.5708</pose>
+    <model name='tag_7'>
+      <pose frame=''>0 0.64 2 1.5708 -0 1.5708</pose>
       <static>1</static>
       <link name='fronttag'>
         <pose frame=''>0 0 0.01 0 -0 0</pose>
@@ -560,7 +560,232 @@
           <material>
             <script>
               <uri>file://tags_material/scripts/tags.material</uri>
-              <name>Tag36_11_00000</name>
+              <name>Tag36_11_00007</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='backcover'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <static>0</static>
+    </model>
+    <model name='tag_4'>
+      <pose frame=''>0 0.18 1.4 1.5708 -0 1.5708</pose>
+      <static>1</static>
+      <link name='fronttag'>
+        <pose frame=''>0 0 0.01 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00004</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='backcover'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <static>0</static>
+    </model>
+    <model name='tag_3'>
+      <pose frame=''>0 1.26 1.51 1.5708 -0 1.5708</pose>
+      <static>1</static>
+      <link name='fronttag'>
+        <pose frame=''>0 0 0.01 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00003</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='backcover'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <static>0</static>
+    </model>
+    <model name='tag_1'>
+      <pose frame=''>0.6 0.78 0.58 1.5708 -0 1.5708</pose>
+      <static>1</static>
+      <link name='fronttag'>
+        <pose frame=''>0 0 0.01 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.01</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00001</name>
             </script>
           </material>
         </visual>
@@ -645,7 +870,7 @@
     </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-4.49774 -1.42328 4.90595 -0 0.834202 0.37302</pose>
+        <pose frame=''>5.27182 4.58276 4.33274 0 0.534202 -2.50216</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -671,15 +896,15 @@
       <shadows>1</shadows>
     </scene>
     <state world_name='GrannyAnnie'>
-      <sim_time>40 192000000</sim_time>
-      <real_time>40 342920310</real_time>
-      <wall_time>1496852687 370254471</wall_time>
-      <iterations>40192</iterations>
+      <sim_time>325 955000000</sim_time>
+      <real_time>35 336124150</real_time>
+      <wall_time>1500023327 513797649</wall_time>
+      <iterations>35193</iterations>
       <model name='CALIBOARD'>
-        <pose frame=''>1 1 1 0 1.57079 0</pose>
+        <pose frame=''>1.82164 6.10331 1 0 1.57079 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>1 1 1 0 1.57079 0</pose>
+          <pose frame=''>1.82164 6.10331 1 0 1.57079 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -696,42 +921,90 @@
         </link>
       </model>
       <model name='quadrotor'>
-        <pose frame=''>-2.98923 1.0001 0.039757 0.000504 0.001485 -0.013578</pose>
+        <pose frame=''>3.15426 0.815209 0.039935 1.4e-05 0.000623 -3.12915</pose>
         <scale>1 1 1</scale>
         <link name='base_link'>
-          <pose frame=''>-2.98923 1.0001 0.039757 0.000504 0.001485 -0.013578</pose>
+          <pose frame=''>3.15426 0.815209 0.039935 1.4e-05 0.000623 -3.12915</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='tag_0'>
-        <pose frame=''>0 0 1 1.5708 0 -1.5708</pose>
+      <model name='tag_1'>
+        <pose frame=''>2.35636 5.88713 0.58 1.5708 -0 1.5708</pose>
         <scale>1 1 1</scale>
         <link name='backcover'>
-          <pose frame=''>0 0 1 1.5708 0 -1.5708</pose>
+          <pose frame=''>2.35636 5.88713 0.58 1.5708 -0 1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
         <link name='fronttag'>
-          <pose frame=''>-0.01 0 1 1.5708 0 -1.5708</pose>
+          <pose frame=''>2.36636 5.88713 0.58 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='tag_3'>
+        <pose frame=''>0 1.26 1.51 1.5708 -0 1.5708</pose>
+        <scale>1 1 1</scale>
+        <link name='backcover'>
+          <pose frame=''>0 1.26 1.51 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='fronttag'>
+          <pose frame=''>0.01 1.26 1.51 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='tag_4'>
+        <pose frame=''>2.68262 6.45608 1.4 1.5708 -0 1.5708</pose>
+        <scale>1 1 1</scale>
+        <link name='backcover'>
+          <pose frame=''>2.68262 6.45608 1.4 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='fronttag'>
+          <pose frame=''>2.69262 6.45608 1.4 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='tag_7'>
+        <pose frame=''>3.13317 6.54518 2 1.5708 -0 1.5708</pose>
+        <scale>1 1 1</scale>
+        <link name='backcover'>
+          <pose frame=''>3.13317 6.54518 2 1.5708 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='fronttag'>
+          <pose frame=''>3.14317 6.54518 2 1.5708 -0 1.5708</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <light name='point_light1'>
-        <pose frame=''>-2.5 1 3 0 -0 0</pose>
+        <pose frame=''>2.5 1 3 0 -0 0</pose>
       </light>
       <light name='point_light2'>
-        <pose frame=''>-5.68 -3.81 3 0 -0 0</pose>
+        <pose frame=''>5.68 3.81 3 0 -0 0</pose>
       </light>
       <light name='point_light3'>
-        <pose frame=''>-1.23 -6 3 0 -0 0</pose>
+        <pose frame=''>1.23 6 3 0 -0 0</pose>
       </light>
       <light name='sun'>
-        <pose frame=''>-4 -2 10 0 -0 0</pose>
+        <pose frame=''>4 2 10 0 -0 0</pose>
       </light>
     </state>
   </world>

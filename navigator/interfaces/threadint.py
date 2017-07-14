@@ -3,7 +3,7 @@ import threading
 import time
 from datetime import datetime
 
-t_cycle = 30 # ms
+t_cycle = 40 # ms
 
 class ThreadInt(threading.Thread):
 

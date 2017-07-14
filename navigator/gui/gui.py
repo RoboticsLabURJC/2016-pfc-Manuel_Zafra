@@ -17,8 +17,12 @@ import pyqtgraph as pg
 
 class Gui(QtGui.QWidget):
 
-    def __init__(self):
+    def __init__(self, opt):
         super(Gui, self).__init__()
+
+        self.opt = opt
+
+        self.loadpath()
 
         self.setWindowTitle('Drone Navigator')
         self.setMinimumSize(750,800)
@@ -60,7 +64,7 @@ class Gui(QtGui.QWidget):
         self.toggleCam.setParent(self)
         self.toggleCam.clicked.connect(self.togglecam)
 
-        self.glWidget = GLWidget()
+        self.glWidget = GLWidget(self.opt, self.path)
         self.glWidget.setMinimumSize(450,450)
         self.glWidget.setMaximumSize(450,450)
         self.glWidget.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -77,23 +81,30 @@ class Gui(QtGui.QWidget):
         self.plotWidget.setMinimumSize(720,300)
         self.plotWidget.setMaximumSize(720,300)
 
-        self.poseErrorplot = self.plotWidget.addPlot()
-        self.poseErrorplot.showAxis('bottom', False)
-        self.poseErrorplot.setRange(yRange=[0,3])
-        self.poseErrorplot.showGrid(y=True)
-        self.poseErrordata =np.zeros(250) 
-        self.poseErrorplot.addLegend()
-        self.poseErrorcurve = self.poseErrorplot.plot(self.poseErrordata, pen=(255,0,0),
-            name="Pose3D Error")
-        self.angleErrordata =np.zeros(250) 
-        self.angleErrorplot = self.plotWidget.addPlot()
-        self.angleErrorplot.showAxis('bottom', False)
-        self.angleErrorplot.setRange(yRange=[0,180])
-        self.angleErrorplot.showGrid(y=True)
-        self.angleErrorplot.addLegend()
-        self.angleErrorcurve = self.angleErrorplot.plot(self.angleErrordata, pen=(0,255,0),
-            name="Angle Error")
+        '''
+        if self.opt == 'sim' :
+            self.poseErrorplot = self.plotWidget.addPlot()
+            self.poseErrorplot.showAxis('bottom', False)
+            self.poseErrorplot.setRange(yRange=[0,3])
+            self.poseErrorplot.showGrid(y=True)
+            self.poseErrordata =np.zeros(250) 
+            self.poseErrorplot.addLegend()
+            self.poseErrorcurve = self.poseErrorplot.plot(self.poseErrordata, pen=(255,0,0),
+                name="Pose3D Error")
+        '''
 
+        self.pathErrordata =np.zeros(250) 
+        self.pathErrorplot = self.plotWidget.addPlot()
+        self.pathErrorplot.showAxis('bottom', False)
+        self.pathErrorplot.setRange(yRange=[0,3])
+        self.pathErrorplot.showGrid(y=True)
+        self.pathErrorplot.addLegend()
+        self.pathErrorcurve = self.pathErrorplot.plot(self.pathErrordata, pen=(60,60,255),
+            name="Path Error")
+        if self.opt == 'sim' :
+            self.poseErrordata =np.zeros(250) 
+            self.poseErrorcurve = self.pathErrorplot.plot(self.poseErrordata, pen=(30,255,30),
+                name="Position Error")
         self.ptr = 0      
         self.connect(self, QtCore.SIGNAL("NewImg"), self.update_img)
 
@@ -171,16 +182,21 @@ class Gui(QtGui.QWidget):
     def update(self):
         pose3d = self.interface.getPose3D()
         self.glWidget.setPose3D(pose3d)
+        if self.opt == 'sim' :
+            simpose3d = self.interface.getsimPose3D()
+            self.glWidget.setsimPose3D(simpose3d)
         self.glWidget.update()
         image = self.interface.getImage()
         #self.posText.setText("Position: \n(%f, %f, %f)"
         #    %(pose3d.x, pose3d.y, pose3d.z))
         if self.ptr == 249 :
-            self.poseErrordata = np.roll(self.poseErrordata, -1)
-            self.angleErrordata = np.roll(self.angleErrordata, -1)
+            self.pathErrordata = np.roll(self.pathErrordata, -1)
         else : self.ptr += 1
-        #self.poseErrordata[self.ptr] = self.poseError(realpose3d, pose3d)
-        #self.angleErrordata[self.ptr] = self.angleError(realpose3d, pose3d)
+        if self.opt == 'sim' :
+            if self.ptr == 249 :
+                self.poseErrordata = np.roll(self.poseErrordata, -1)
+            self.poseErrordata[self.ptr] = self.poseError(simpose3d, pose3d)
+        self.pathErrordata[self.ptr] = self.interface.getPatherror()
         if not (image is None):
             self.emit(QtCore.SIGNAL("NewImg"), image)
 
@@ -189,9 +205,9 @@ class Gui(QtGui.QWidget):
         #size=QtCore.QSize(image.shape[1],image.shape[0])
         #self.imgLabel.resize(size)
         self.imgLabel.setPixmap(QtGui.QPixmap.fromImage(img))
-
-        self.poseErrorcurve.setData(self.poseErrordata)
-        self.angleErrorcurve.setData(self.angleErrordata)
+        if self.opt == 'sim' :
+            self.poseErrorcurve.setData(self.poseErrordata)
+        self.pathErrorcurve.setData(self.pathErrordata)
 
     def poseError(self, pose3d1, pose3d2):
         d = math.sqrt((pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2 + (pose3d1.x - pose3d2.x)**2)
@@ -216,15 +232,8 @@ class Gui(QtGui.QWidget):
         return angDifference
     '''
 
-    def angleError(self, pose3d1,pose3d2):
-        (r1,p1,y1) = self.qtorpy(pose3d1)
-        (r2,p2,y2) = self.qtorpy(pose3d2)
-        ANGe = y1 - y2
-        while (ANGe < -math.pi):
-            ANGe = ANGe + 2*math.pi
-        while (ANGe > math.pi):
-            ANGe = ANGe - 2*math.pi
-        return ANGe
+    #def pathError(self, pose3d):
+    #    return 1
 
     def qtorpy(self, pose):
         #Transforms quaternions to (roll,pitch,yaw) 
@@ -233,17 +242,37 @@ class Gui(QtGui.QWidget):
         yaw = math.atan2(2.0*(pose.q0*pose.q3 + pose.q1*2), 1 - 2*(pose.q2*pose.q2 + pose.q3*pose.q3))
         return (roll,pitch,yaw)  #[degrees]
 
+    def loadpath(self):
+        a = []
+        filename = 'path.txt'
+        if self.opt == 'sim' :
+            filename = 'pathsim.txt'
+        for line in open(filename,'r').readlines():
+            pose = jderobot.Pose3DData()
+            line = line.rstrip('\n')
+            linelist = line.split()
+            print (linelist[0])
+            pose.x = float(linelist[0])
+            pose.y = float(linelist[1])
+            pose.z = float(linelist[2])
+            a.append(pose)
+        #print 'pintando ruta?? %f' %a[5].x
+        self.path = list(a)
+        #print 'pintando ruta?? %f' %self.path[5].x
+
 
 # OPENGL WIDGET CLASS
 
 class GLWidget(QtOpenGL.QGLWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, opt, path, parent=None):
         super(GLWidget, self).__init__(parent)
+        self.opt = opt
         self.pose3d = None
         self.trailbuff = RingBuffer(300)
-        self.path = []
-        self.loadpath()
+        if self.opt == 'sim' :
+            self.simtrailbuff = RingBuffer(300)
+        self.path = path
         self.viewpoint = True
         self.view_d = 20.0
         self.view_ang = math.radians(60.0)
@@ -252,21 +281,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.eyez = abs(self.view_d * math.cos(self.view_ang))
         self.rot = 20.0 #degrees
         self.drone3d = OBJFile('gui/quadrotor/blender/quadrotor_CAD2.obj')
-
-    def loadpath(self):
-        a = []
-        for line in open('path.txt','r').readlines():
-            pose = jderobot.Pose3DData()
-            line = line.rstrip('\n')
-            linelist = line.split()
-            #print linelist[0]
-            pose.x = float(linelist[0])
-            pose.y = float(linelist[1])
-            pose.z = float(linelist[2])
-            a.append(pose)
-        #print 'pintando ruta?? %f' %a[5].x
-        self.path = list(a)
-        #print 'pintando ruta?? %f' %self.path[5].x
 
     def paintGL(self):
 
@@ -286,6 +300,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.axis()
         self.floor()
         self.trail()
+        if self.opt == 'sim' :
+            self.simtrail()
         self.route()
         if self.pose3d != None :
             self.drone()
@@ -300,9 +316,16 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.dZ = pose3d.z
             self.trailbuff.append(self.pose3d)
 
-    def initializeGL(self):
-        glClearColor(0.6, 0.6, 0.6, 1);
+    def setsimPose3D(self, simpose3d):
+        self.simpose3d = simpose3d
+        if self.simpose3d != None :
+            self.simtrailbuff.append(self.simpose3d)
 
+    def initializeGL(self):
+        glClearColor(0.8, 0.8, 0.8, 1);
+
+        lightpos = [0.0, 0.0, 10.0]
+        glLightfv(GL_LIGHT0, GL_POSITION, lightpos)
         glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
         glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
         glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.5, 1.0))
@@ -343,7 +366,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def floor(self):
         #Draws floor grid
         glLineWidth(0.5)
-        glColor3f(0.0, 0.0, 0.0)
+        glColor3f(0.6, 0.6, 0.6)
         for x in range(-10,11):
             glBegin(GL_LINES)
             glVertex3f(x*2, -20, 0)
@@ -362,6 +385,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         #HAY QUE CORREGIR YAW DE AUTOLOC
         yaw = self.pose3d.q2
+
         yaw += (math.pi / 2)
         while (yaw < -math.pi):
             yaw += 2*math.pi
@@ -381,25 +405,44 @@ class GLWidget(QtOpenGL.QGLWidget):
     def trail(self):
         #Draws drone's movement trail
         glLineWidth(2)
-        glColor3f(0.2, 0.5, 0.2)
+        glColor3f(0.2, 0.7, 0.2)
         for x in range(1,self.trailbuff.getlen()-1):
             self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
+
+    def simtrail(self):
+        #Draws drone's movement trail
+        glColor3f(0.2, 0.2, 0.7)
+        glPointSize(4)
+        glBegin(GL_POINTS)
+        glVertex(self.simpose3d.x,self.simpose3d.y,self.simpose3d.z)
+        glEnd()
+        glLineWidth(2)
+        for x in range(1,self.simtrailbuff.getlen()-1):
+            self.drawTrailLine(self.simtrailbuff.get(x),self.simtrailbuff.get(x+1))
+        
 
     def route(self):
         glLineWidth(2)
         glColor3f(0.7, 0.3, 0.3)
         glPointSize(3)
         glLineWidth(1)
+        '''
+        pose = self.path[0]
+        glBegin(GL_POINTS)
+        glVertex(pose.x,pose.y,pose.z)
+        glEnd()
+        '''
+
         for pose0, pose1 in zip(self.path, self.path[1:]) :
             glBegin(GL_POINTS)
             glVertex(pose0.x,pose0.y,pose0.z)
             glEnd()
             glBegin(GL_LINES)
-            #print 'pintando ruta?? %f' %pose1.x
             glVertex3f(pose1.x,pose1.y,pose1.z)
             glVertex3f(pose0.x,pose0.y,pose0.z)
             glEnd()
             #print pose.x
+
 
     def drawTrailLine(self, poseA, poseB):
         #Draws line between two given pose3D data structures
