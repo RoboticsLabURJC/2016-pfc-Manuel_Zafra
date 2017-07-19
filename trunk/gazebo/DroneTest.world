@@ -1,0 +1,390 @@
+<?xml version="1.0" ?>
+<sdf version='1.4'>
+  <world name='DroneTest'>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>-9 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>0.5 -0.3 -0.9</direction>
+    </light>
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+            </friction>
+            <bounce/>
+            <contact>
+              <ode/>
+            </contact>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <velocity_decay>
+          <linear>0</linear>
+          <angular>0</angular>
+        </velocity_decay>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <gravity>1</gravity>
+      </link>
+    </model>
+    
+<!--  AR_DRONE   -->
+
+    <include>
+      <uri>model://ArDrone2</uri>
+      <pose>-9 0 0.5 0 0 0</pose>
+    </include>  
+
+<!--  APRIL_TAGS   -->
+
+    <model name='tag_0'>
+      <pose>-2 -4 2 -1.5707 -1.5707 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00000</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_1'>
+      <pose>0 -4 2 -1.5707 -1.5707 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00001</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='tag_2'>
+      <pose>2 -4 2 -1.5707 -1.57070 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.300000 0.3000000 0.020000</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://tags_material/scripts/tags.material</uri>
+              <name>Tag36_11_00002</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+<!-- BEACONS  -->
+
+
+    <model name='beacon_0'>
+      <pose>-7 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_1'>
+      <pose>-5 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_2'>
+      <pose>-4 1 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_3'>
+      <pose>-3 1 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_4'>
+      <pose>-2 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_5'>
+      <pose>0 -1 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_6'>
+      <pose>2 -1 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_7'>
+      <pose>4 -3 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_8'>
+      <pose>6 -1 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_9'>
+      <pose>8 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_9'>
+      <pose>8 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_10'>
+      <pose>8 2 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_11'>
+      <pose>7 3 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+    <model name='beacon_12'>
+      <pose>5 3 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+
+
+    <model name='beacon_13'>
+      <pose>4 2 0 0 0 0</pose>
+      <static>true</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.100000 0.100000 0.1000000</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <static>0</static>
+    </model>
+    </world>
+</sdf>

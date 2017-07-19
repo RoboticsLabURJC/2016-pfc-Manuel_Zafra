@@ -1,0 +1,6 @@
+#!/bin/bash 
+
+gnome-terminal -e gzserver ../gazebo/AprilTagsFlat.world ./s
+gnome-terminal -e gzserver ./cam_autoloc --Ice.Config=cam_autoloc.cfg
+gnome-terminal -e gzserver ./navigator.py --Ice.Config=nav.cfg
+

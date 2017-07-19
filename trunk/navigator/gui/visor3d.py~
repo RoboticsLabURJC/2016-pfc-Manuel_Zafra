@@ -1,0 +1,179 @@
+# -*- coding: utf-8 -*-
+
+
+import math
+import sys
+import pickle
+import pygame
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from pygame.locals import *
+from pygame.constants import *
+from objloader import *
+
+class Visor3D():
+
+    def __init__(self):
+        pygame.init()
+        viewport = (800,600)
+        hx = viewport[0]/2
+        hy = viewport[1]/2
+        srf = pygame.display.set_mode(viewport, OPENGL | DOUBLEBUF)
+        
+        glClearColor(0.2,0.2,0.2,1)
+        glLightfv(GL_LIGHT0, GL_POSITION,  (-40, 200, 100, 0.0))
+        glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1.0))
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.5, 1.0))
+        glEnable(GL_LIGHT0)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_DEPTH_TEST)
+        glShadeModel(GL_SMOOTH)           # most obj files expect to be smooth-shaded
+         
+        # LOAD OBJECT AFTER PYGAME INIT
+        obj = OBJ('gui/quadrotor/blender/quadrotor_CAD2.obj', swapyz=True)
+         
+        clock = pygame.time.Clock()
+         
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        width, height = viewport
+        gluPerspective(90.0, width/float(height), 1, 100.0)
+        glEnable(GL_DEPTH_TEST)
+        glMatrixMode(GL_MODELVIEW)
+
+        rx, ry = (0,0)
+        tx, ty = (0,0)
+        zpos = 5
+        rotate = move = False
+        while 1:
+            clock.tick(30)
+            for e in pygame.event.get():
+                if e.type == QUIT:
+                    sys.exit()
+                elif e.type == KEYDOWN and e.key == K_ESCAPE:
+                    sys.exit()
+                elif e.type == MOUSEBUTTONDOWN:
+                    if e.button == 4: zpos = max(1, zpos-1)
+                    elif e.button == 5: zpos += 1
+                    elif e.button == 1: rotate = True
+                    elif e.button == 3: move = True
+                elif e.type == MOUSEBUTTONUP:
+                    if e.button == 1: rotate = False
+                    elif e.button == 3: move = False
+                elif e.type == MOUSEMOTION:
+                    i, j = e.rel
+                    if rotate:
+                        rx += i
+                        ry += j
+                    if move:
+                        tx += i
+                        ty -= j
+         
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            glLoadIdentity()
+         
+            # RENDER OBJECT
+
+            glTranslate(tx/20., ty/20., - zpos)
+            glRotate(ry, 1, 0, 0)
+            glRotate(rx, 0, 1, 0)
+            self.axis()
+            self.floor()
+            glCallList(obj.gl_list)
+
+         
+            pygame.display.flip()
+
+
+
+
+
+    def axis(self):
+        #Draws 3d axis
+        glLineWidth(2)
+        glColor3f(1.0, 0.0, 0.0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(5, 0, 0)
+        glEnd()
+        glColor3f(0.0, 1.0, 0.0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 5, 0)
+        glEnd()
+        glColor3f(0.0, 0.0, 1.0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0, 0, 5)
+        glEnd()
+
+    def floor(self):
+        #Draws floor grid
+        glLineWidth(0.5)
+        glColor3f(0.2, 0.2, 0.2)
+        for x in range(-10,11):
+            glBegin(GL_LINES)
+            glVertex3f(x*2, -20, 0)
+            glVertex3f(x*2, 20, 0)
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(20, x*2, 0)
+            glVertex3f(-20, x*2, 0)
+            glEnd()
+
+    def drone(self):
+        #Draws drone position
+        yaw = self.qtoyaw(self.pose3d.q0,self.pose3d.q1,self.pose3d.q2,self.pose3d.q3)
+        glPushMatrix();
+        glTranslate(self.dX,self.dY,self.dZ)
+        glRotatef(yaw,0,0,1)
+        glColor3f(0.9, 0.9, 0.9)
+        c = gluNewQuadric()
+        gluCylinder(c,0.5,0.5,0.1,8,2)
+        glPointSize(3)
+        glBegin(GL_POINTS)
+        glVertex(0,0,0)
+        glEnd()
+        glColor3f(0.9, 0.2, 0)
+        glLineWidth(2.0)
+        glBegin(GL_LINES)
+        glVertex3f(0, 0, 0)
+        glVertex3f(0.7, 0, 0)
+        glEnd()
+        glPopMatrix();
+
+    def trail(self):
+        #Draws drone's movement trail
+        glLineWidth(1)
+        glColor3f(0.2, 0.5, 0.2)
+        for x in range(1,self.trailbuff.getlen()-1):
+            self.drawTrailLine(self.trailbuff.get(x),self.trailbuff.get(x+1))
+
+    def route(self):
+        #Draws drone's path
+        #glLineWidth(1)
+        #glColor3f(0.7, 0.3, 0.3)
+        #for x in range(1,self.routbuff.getlen()-1):
+        #    self.drawTrailLine(self.routbuff.get(x),self.routbuff.get(x+1))
+        glColor3f(0.7, 0.3, 0.3)
+        glPointSize(2)
+        (xx, yy, zz) = self.routbuff[0]
+
+        for (x,y,z) in self.routbuff:
+            glBegin(GL_POINTS)
+            glVertex(x,y,z)
+            glEnd()
+            glBegin(GL_LINES)
+            glVertex3f(x,y,z)
+            glVertex3f(xx,yy,zz)
+            glEnd()
+            (xx, yy, zz) = (x, y, z)
+
+    def drawTrailLine(self, poseA, poseB):
+        #Draws line between two given pose3D data structures
+        glBegin(GL_LINES)
+        glVertex3f(poseA.x, poseA.y, poseA.z)
+        glVertex3f(poseB.x, poseB.y, poseB.z)
+        glEnd()
+
