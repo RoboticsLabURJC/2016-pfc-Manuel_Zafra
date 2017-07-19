@@ -1,0 +1,14 @@
+#!/usr/bin/python
+import sys
+
+pathfile = open('path.txt', 'w')
+fileindex = open('pose3d/pose3dData.txt', 'r')
+filelist = fileindex.read().splitlines()
+
+for line in filelist :
+    posefile = open('pose3d/' + line, 'r')
+    pose = posefile.read()
+    posefile.close()
+    pathline = "%f %f %f" %(pose.x pose.y pose.z)
+    pathfile.writeline(pathline)
+        
