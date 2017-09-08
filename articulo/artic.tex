@@ -19,19 +19,30 @@ This paper addresses the design and implementation of a path following controlli
 
 \section{Introduction}
 
-	In recent years, the rapid development of new technologies and the decreasing price of the hardware have allowed people an easier access to robotics. There has also been an emerging interest in the use of \textit{Unmaned Aerial Vehicles} (UAVs) on applications such as 3D mapping, military tasks, security, inspection \cite{nikolic2014} or agriculture. Maybe quadrotors are the most popularized aerial vehicles now. Currently there are several lines of research and projects with UAVs, like \textit{Project Wing} from \textit{Google} or \textit{Prime Air} from \textit{Amazon}. 
+	In recent years, the rapid development of new technologies and the decreasing price of the hardware have allowed an easier access to robotics. There has also been an emerging interest in the use of \textit{Unmaned Aerial Vehicles} (UAVs) on applications such as 3D mapping, military tasks, security, inspection \cite{nikolic2014} or agriculture. Maybe quadrotors are the most popularized aerial vehicles now. Currently there are several lines of research and projects with UAVs, including prototypes from big companies like \textit{Project Wing} from \textit{Google} or \textit{Prime Air} from \textit{Amazon}. 
+ %competitions
+        The growing interest in aerial robotics also is reflected in several international competitions like Int. Micro Air Vehicle Indoor Flight Competition IMAV \footnote{http://www.imavs.org}, DronesForGood \footnote{http://www.dronesforgood.ae}, Mohamed Bin Zayed Int. Robotics Challenge (MBZIRC) \footnote{http://www.mbzirc.com}, which foster the research and development of UAVs technology.
 
-	In order to accomplish some of the above mentioned taks, the vehicle must work autonomously without the constant supervision of human operators. One approach to achieve this autonomy the UAV is following of predefined paths in 3D \cite{dandrea2015,beul2015}. For this the UAV should continuously know its 3D position. Outdoor this can be achieved with the help of sensors such as GPS, Inertial Measurement Unit (IMU) or altimeter. For indoor environments higher accuracy is needed as there may be multiple obstacles within a few meters. 
-	
-	Solutions to 3D localization may come from external motion capture systems \cite{jimenez2014,lupashin2014} of from onboard computer vision \cite{wu2013}. Typically motion capture systems monitor the position of the vehicles at a frequency of 100 Hz. The procedures may vary depending on the camera used (RGB, RGBD, ToF...) and whether the camera is on the scenario or onboard the drone. Three main techniques can be distinguished for onboard cameras. First, \textit{Visual Odometry} in which the position is estimated by calculating the incremental movement between separate pictures extracting the characteristic points of an image. Even though this method can provide good short-term accuracy, the error rapidly increases with movement. Second, \textit{Visual SLAM} family of algorithms allows the mapping of the area observed and simultaneously the localization of the camera. MonoSLAM, PTAM, DSO \cite{engel2017}, LSD-SLAM and SVO \cite{forster2014} algorithms belong to this family. And third, \textit{Localization based on Markers}, fiducial systems, which are based on the previous knwoledge of the environment's map \cite{apvrille2013,lopezceron2016}. This information is given by a series of visual markers so when the camera detects any of these markers the relative position to it can be obtanied, therefore the global position of the camera. 
+
+        %frameworks
+	In order to accomplish some of the above mentioned taks, the vehicles must work autonomously without the constant supervision of human operators. Many capabilities are desired in this context like path following, self-localization, precision landing, obstacle detection and avoidance among others. There are several frameworks for UAV like AEROSTACK \cite{sanchezlopez2016} that help in developing such capabilities. UAV Programming JdeRobot, ROS...
+
+        
+        % path following
+        One important capability to achieve the UAV autonomy is following of predefined paths in 3D \cite{dandrea2015,beul2015, nguyen2014}. For this the UAV should continuously know its 3D position and control its movement to advance through the desired 3D path.
+
+        % self-localization
+        In outdoor scenarios 3D localization can be achieved with the help of sensors such as GPS, Inertial Measurement Unit (IMU) or altimeter. For indoor environments higher accuracy is needed as there may be multiple obstacles within a few meters. There, solutions may come from external motion capture systems \cite{jimenez2014,lupashin2014} or from onboard computer vision \cite{wu2013,rodriguezramos2016}. Typically motion capture systems monitor the position of the vehicles at a frequency of 100 Hz. The procedures may vary depending on the camera used (RGB, RGBD, ToF...) and whether the camera is on the scenario or onboard the drone. Three main techniques can be distinguished for onboard cameras. First, \textit{Visual Odometry} in which the position is estimated by calculating the incremental movement between separate pictures extracting the characteristic points of an image. Even though this method can provide good short-term accuracy, the error rapidly increases with movement. Second, \textit{Visual SLAM} family of algorithms allows the mapping of the area observed and simultaneously the localization of the camera. MonoSLAM, PTAM, DSO \cite{engel2017}, LSD-SLAM and SVO \cite{forster2014} algorithms belong to this family. And third, \textit{Localization based on Markers}, fiducial systems, which are based on the previous knowledge of the environment's map \cite{apvrille2013,lopezceron2016}. This information is given by a series of visual markers whose absolute position is known, so when the camera detects any of these markers the relative position to it can be obtanied, therefore the global position of the camera. 
 %The markers that can be used are plenty, with the only limitation being that the camera must be able to recognize them easily. Some of the most common markers used are bi-dimensional bar codes, which are the ones used by this system.
 	
-
+        % control approaches
+The control of the movements can be achieved with several approaches like PD controllers, etc. \cite{hernandez2014,hernandez2013,nguyen2014}
+        
 
         %% hardware: drones 
         %% In this case, we are using a specific UAV type, quadcopters. A quadcopter is a multirotor helicopter that is propelled by four rotors. This kind of aerial vehicle differs from conventional helicopters, which use rotors that are able to vary the pitch of their blades dynamically as they move around the rotor hub. Usually, the architecture consist of two rotors on the front and two on the back, however some models include one frontal rotor, two on the sides and another one on the back. The rotors, when functioning, apply an upwards force called lift that sustain the vehicle. In order to the quadcopter to take off, the lift must be higher than gravitational forces. Once hovering, if gravitational forces equal lift, the vehicle will remaing still. Modifying lift will cause it to go upwards or downwards depending on the force applied. Horizontal movement is generated by altering the rotation power of two pairs of rotors. For instance, if we want to apply forward movement we have to reduce the power of the two frontal rotors and increase power on both of the rear rotors. The difference of the power applied is proportional to the movement speed generated. To understand rotation movement, we have to comprehend how the rotors work in sense of rotational direction. In order to the quadcopter to mantain its position, angular velocity must equal zero. This is accomplished by having two rotors function with one rotational direction and making the opposite pair rotate on the reverse direction. If different power is applied to pairs of rotors, the quadrotor will rotate towards the direction of the most powerful rotors.
 	
-	The goal of this project is to develop a vision-based autonomous navigation system for a quadcopter in indoor environments. The navigation will be based on a path tracking method, ensuring a robust position control. In order to accomplish that, self location will depend on computer vision algorithms relying on visual markers. Given the characteristics of the environment, the system must function with minimal error in order to avoid obstacles in close spaces.
+	The goal of this project is to develop the first prototype of a vision-based path following system for quadcopters in indoor environments. The navigation will be based on a path tracking method, ensuring a robust position control. In order to accomplish that, self location will depend on computer vision algorithms relying on visual markers. Given the features of the environment, the system must function with minimal error in order to avoid obstacles in close spaces.
 
 \section{Infrastructure}
 
@@ -39,7 +50,7 @@ Several hardware and software pieces have been used in this work.
 
 \subsection{ArDrone2 quadrotor}
 
-	The platform used is \textit{Parrot}'s \textit{ArDrone2.0}. The quadcopter was developed in 2012 as an enhanced product of its precessor, \textit{ArDrone1.0}. The onboard computer runs a \textit{Linux} OS, and communicates with the pilot through a self-generated Wi-Fi spot. The onboard sensors include an ultrasonic altimeter enhanced with an air pressure sensor, as well as 3-axis gyroscope, accelerometer and magnetometer, which are used to provide stabilisation. It is also equipped with a 720p front camera and a ventral QVGA sensor.
+	The platform used is \textit{Parrot}'s \textit{ArDrone2.0}. The quadcopter was developed in 2012 as an enhanced product of its predecessor, \textit{ArDrone1.0}. The onboard computer runs a \textit{Linux} OS, and communicates with the pilot through a self-generated Wi-Fi spot. The onboard sensors include an ultrasonic altimeter enhanced with an air pressure sensor, as well as 3-axis gyroscope, accelerometer and magnetometer, which are used to provide stabilisation. It is also equipped with a 720p front camera and a ventral QVGA sensor.
 	
 	\begin{table}
 	\centering
@@ -65,7 +76,7 @@ Several hardware and software pieces have been used in this work.
 
 	\textit{AprilTags} is a visual fiducial system widely used for tasks including robotics, augmented reality and camera calibration. This system was developed in 2011 by Ed Olson \cite{eolson}. The concept is similar to QR Codes in that they are two-dimensional bar codes (Fig. \ref{fig:apriltags}). However, AprilTags are designted to encode far smaller data payloads (between 4 and 12 bits) and it introduces a new encoding system addressing some specific problems with 2D bar codes, enhancing robustness for rotation angles detection and against false positives, and allowing them to be detected from longer ranges.
 	
-	The AprilTags detection software detects any AprilTags in a given image, providing the unique ID of the tag as well as its location in the image. It can also provide the the relative transformation between tag and camera. For this system, AprilTags has only been used for the detection of tags in an image, obtaining the tag ID and the location (height and width pixel) in the given image. The positon estimation given by this library is not used because we wanted to obtain the postion given solely by our own developed component.
+	The AprilTags detection software detects any AprilTags in a given image, providing the unique ID of the tag as well as its location in the image. It can also provide the relative transformation between tag and camera. For this system, AprilTags has only been used for the detection of tags in an image, obtaining the tag ID and the location (height and width pixel) in the given image. The positon estimation given by this library is not used because we wanted to obtain the postion given solely by our own developed component.
 	
 	\begin{figure}[h]
 		\begin{center}
@@ -79,7 +90,7 @@ Several hardware and software pieces have been used in this work.
 
 	The system has been developed using the JdeRobot software framework, a robotics and computer vision development platform. It provides support to many sensors and actuators, while providing several libraries and drivers. It is mainly developed in C++, also having some parts developed in Python. In JdeRobot a robotic application typically is composed of several interacting components and the communication between them is done through \textit{Internet Comunication Engine} (ICE) over TCP/IP. ICE is a server-client protocol, based on \textit{Remote Procedure Call} (RPC), which allows remote execution of software without worrying about communications.
 
- The components may extract information from different robot sensors and provide it for other components. Within JdeRobot there are many drivers developed to support several physical sensors and adapters. This simplifies hardware access from applications providing an abstraction layer over the manufacturer's software such as \textit{Ar.Drone SDK} in \textit{ArDrone}. 
+ The components may extract information from different robot sensors and provide it for other components. Within JdeRobot there are many drivers developed to support several physical sensors and actuators. This simplifies hardware access from applications providing an abstraction layer over the manufacturer's software such as \textit{Ar.Drone SDK} in \textit{ArDrone}. 
 
         \subsubsection{Progeo Library}
         
@@ -87,7 +98,7 @@ Several hardware and software pieces have been used in this work.
 
 \subsubsection{CameraCalibrator}
 
-	CameraCalibrator is a JdeRobot tool which obtains the intrinsic parameters of a camera. CameraCalibrator recieves camera images by ICE interface, and offers a simple user interface which simplify the calibration process. In its configuration file, settings can be modified such as calibration pattern, number of images taken or delay between images. The component uses OpenCV and its camera calibration methods and writes the output in a \textit{.yml} text file. This tools was used to obtain the camera parameters for the real ArDrone camera and the simulated camera.
+	CameraCalibrator is a JdeRobot tool which obtains the intrinsic parameters of a camera. CameraCalibrator recieves camera images by ICE interface, and offers a simple user interface which simplifies the calibration process. In its configuration file, settings can be modified such as calibration pattern, number of images taken or delay between images. The component uses OpenCV and its camera calibration methods and writes the output in a \textit{.yml} text file. This tool was used to obtain the camera parameters for the real ArDrone camera and the simulated camera.
 
 	\begin{figure}[h]
 		\begin{center}
@@ -310,6 +321,12 @@ The developed application is composed of two components, one of them is tasked w
 
 
         \section*{Acknowledgements}
+
+        The research leading to these results has received funding from the RoboCity\-2030\--III\--CM project (Rob\'otica aplicada a la mejora de la calidad de vida de los ciudadanos. fase III; S2013/MIT-2748), funded by Programas de Actividades I+D en la Comunidad de Madrid and cofunded by Structural Funds of the EU. It has also received funding from
+        %the RETOGAR project (TIN2016-76515-R) from the Spanish Ministerio de Econom\'{\i}a y Competitividad. 
+%This research has been partially supported by the Spanish Government research funding ref.MINECO/FEDER TIN2015-69542-C2-1
+the Banco de Santander and Universidad Rey Juan Carlos Funding Program for Excellence Research Groups (ref. Computer Vision and Image Processing (CVIP)).
+
 %
 % ---- Bibliography ----
 %
@@ -348,6 +365,48 @@ López-Cerón, A., Cañas, J.M.: Accuracy analysis of marker-based 3D visual loc
 
 \bibitem{eolson}
 Olson, E.: A robust and flexible visual fiducial system, IEEE International Conference on Robotics and Automation (ICRA), 3400-2407, 2011.
+
+\bibitem{pestana2015}
+  Pestana, J., Sanchez-Lopez, J.L., de la Puente, P., Carrio, A., Campoy, P.:
+  A vision-based quadrotor multi-robot solution for the indoor autonomy challenge of the 2013 international micro air vehicle competition:
+  Journal of Intelligent \& Robotic Systems, pages 1–20, 2015.
+  
+\bibitem{sanchezlopez2014}
+  J.L. Sanchez-Lopez, J. Pestana, P. de la Puente, R. Suarez-Fernandez,and P. Campoy:
+  A system for the design and development of vision-based multi-robot quadrotor swarms.
+  In Unmanned Aircraft Systems (ICUAS), 2014 International Conference on, pages 640–648, May 2014
+  
+\bibitem{sanchezlopez2015}
+  J. L. Sanchez-Lopez, J. Pestana, P. Puente, and P. Campoy:
+  A reliable open-source system architecture for the fast designing and prototyping of autonomous multi-uav systems: Simulation and experimentation.
+  Journal of Intelligent \& Robotic Systems, pages 1–19, 2015.
+
+\bibitem{sanchezlopez2016}
+  Jose Luis Sanchez-Lopez, Ramón A. Suárez Fernández, Hriday Bavle, Carlos Sampedro, Martin Molina, Jesus Pestana, and Pascual Campoy:
+  AEROSTACK: An Architecture and Open-Source Software Framework for Aerial Robotics
+  2016 International Conference on Unmanned Aircraft Systems (ICUAS) June 7-10, 2016. Arlington, VA USA
+
+\bibitem{hernandez2014}
+  Andres Hernandez, Harold Murcia, Cosmin Copot, Robin De Keyser:
+  Model Predictive Path-Following Control of an AR.Drone Quadrotor 
+  Memorias del XVI Congreso Latinoamericano de Control Automático, CLCA 2014, Octubre 14-17, 2014. Cancún, Quintana Roo, México
+
+\bibitem{hernandez2013}
+  Identification and Path Following Control of an AR.Drone Quadrotor
+  Andres Hernandez, Cosmin Copot and Robin De Keyser Tudor Vlas and Ioan Nascu
+  2013
+
+\bibitem{rodriguezramos2016}
+  Alejandro Rodriguez-Ramos, Carlos Sampedro, Adrian Carrio, Hriday Bavle, Ramon A. Suarez Fernandez, Zorana Milosevic, Pascual Campoy:  
+  A Monocular Pose Estimation Strategy for UAV Autonomous Navigation in GNSS-denied Environments
+  IMAV 2016
+  
+\bibitem{nguyen2014}
+  Trung Nguyen, George K. I. Mann and Raymond G. Gosine
+  Vision-Based Qualitative Path-Following Control of Quadrotor Aerial Vehicle
+  2014 International Conference on Unmanned Aircraft Systems (ICUAS) May 27-30, 2014. Orlando, FL, USA
+
+
 
 \end{thebibliography}
 
