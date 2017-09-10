@@ -310,39 +310,41 @@ After some experimental testing, we reached to the conclusion that steering angl
 \section{Experiments}
 
 % experimentos con drone simulado
-        Experimental tests have been performed on simulated and real environments. Simulations were run in \textit{Gazebo} simulator, creating a custom 3D world representing a flat where several AprilTags markers were placed. First experiments were conducted to both of the components inependently. Then, once validated, the full working system was tested on simulated environments and on a real scenario.
-
-        Early self-localization experiments showed high levels of noise. Through analysis, we detected that the algorithm was working properly but the parameters given to it were not correct. \textit{Kalman Filter} noise covariance matrices needed to be adjusted so the noise were modelled accordingly. In addition, intrinsic parameters of the camera used were not accurate. This was solved by a more accurate camera calibration. Finally, one of the most important conclusions was that the markers needed to be bigger due to an erratic behaviour of the markers detection process caused by the high mobility of the vehicle. The final marker size chosen was 25cm. Furthermore, it was noted that the accuracy of the position estimation algorithms decays rapidly when the distance of the camera to the marker is larger than 4 meters.
-
-	
-	On the control side, experiments showed good results. We had to run several iterations in order to find the proper parameters of the control algorithm. Vehicle's optimal speed is 0.1-0.4 m/s, and steering angle gain rate, $ K_{g}$ showed stable results within the range [0.1, 0.3]. The gain rate must be proportional to vehicle's speed in order to have a stable postion control. Lower gain rates are not enough to minimize the position error, while higher rates cause an erratic movement.
-	
+        Experimental tests have been performed on simulated and real drones. Simulations were run in \textit{Gazebo} simulator, creating a custom 3D world representing a typical flat where several AprilTags markers were placed (Figure \ref{fig:simnavigation}). The two system components were fine tunned separately on simulation. Then, once validated, the whole system was succesfully tested both on simulated and on a real scenarios.
+        
 	\begin{figure}[h!]
-		\begin{center}
-                {\includegraphics[width=12cm]{simnavigation.png}}
-		\end{center}
-                \label{fig:simnavigation}
-		\caption{Position based control of a simulated drone}
+          \begin{center}
+            {\includegraphics[width=12cm]{simnavigation.png}}
+          \end{center}
+          \label{fig:simnavigation}
+          \caption{Position based control of a simulated drone}
 	\end{figure}
-
+        
+% localization experiments
+        Self-localization experiments in simulation showed high errors at the beginning. Through analysis, we detected that the algorithm was working properly but some used parameters were not correct. For instance, \textit{Kalman Filter} noise covariance matrices needed to be adjusted to properly model the real noise. In addition, used intrinsic parameters of the camera were not accurate and this caused localization errors. This was solved by a more accurate camera calibration. One of the most important conclusions of these experiments was that the markers needed to be bigger due to an erratic operation of the marker detection process caused by the high mobility of the aerial vehicle. The final marker size chosen was 25cm. Furthermore, it was noted that the accuracy of the position estimation algorithms decays rapidly when the distance of the camera to the marker is larger than 4 meters, confirming the results on \cite{lopezceron2016}.
+	
+% control experiments
+	Control experiments in simulation showed good results from the beginning. We had to run several tests in order to find the proper parameters of the control algorithm. Vehicle's optimal speed is 0.1-0.4 m/s, and steering angle gain rate, $ K_{g}$ showed stable results within the range [0.1, 0.3]. The gain rate must be proportional to vehicle's speed in order to have a stable postion control. Lower gain rates are not enough to minimize the position error, while higher rates cause an erratic movement.
+	
 % experimentos con drone real
-	The first real scenario experiments showed an unstable system behavior, so several iterations had to be run in order to find the correct parameters. Starting with self-localization algorithm, noise matrixes had to be re-adjusted so they could reflect the new noise model. Several marker sizes were tested (17cm., 23cm.  and 33cm.), obtaining the best results with a 33cm. marker size. Also, quadcopter camera needed to be calibrated. The position control component also showed an erratic behaviour due to the natural drift of the vehicle and the magnitude of the velocity commands. Even though the drift caused by the slow movement of the vehicle could not be completeley countered, speed parameters were adjusted so its impact was minimal. Furthermore, the movement of the vehicle caused a blurry effect on cameras, being angular speed a critical factor for this incidence.
+	The first real scenario experiments showed an unstable system behavior. Several tests were needed to find the correct parameters. Noise matrixes in the self-localization algorithm had to be re-adjusted so they could reflect the new noise model. Several marker sizes were also tested (17cm., 23cm.  and 33cm.), obtaining the best results with 33cm. markers. Also, quadcopter camera needed to be calibrated. The position control component also showed erratic behaviour due to the natural drift of the real vehicle and the magnitude of the velocity commands. Even though the drift caused by the slow movement of the vehicle could not be completeley corrected, speed parameters were adjusted so its impact was minimal. Furthermore, the movement of the vehicle caused a blurry effect on cameras, being angular speed a critical factor for this issue.
 	
 	\begin{figure}[h!]
-		\begin{center}
-		{\includegraphics[width=12cm]{appcapture.png}}
-		\end{center}
-		\caption{Position based control of the real drone}
-                \label{fig:realnavigation}
+          \begin{center}
+            {\includegraphics[width=12cm]{appcapture.png}}
+          \end{center}
+          \caption{Position based control of the real drone}
+          \label{fig:realnavigation}
 	\end{figure}
-
+        
 
 \section{Conclusions}
 
-	We have designed and developed an autonomous quadricopter indoor flight system based on a fiducial auto-localization technique. In order to achieve that, we made use of a wide range of different technologies that had to be comprehended and sometimes adapted for our purposes. The system is validated on simulated environments as well as on real environments. Even though noisy data can affect the performance, it has been proven to be stable enough to fit the proposed goals.
-	
-	Experimental results show us that the system is limited in velocity due to the blurriness present in the images taken at high speed. Another limiting key factor to having a robust system is the size of the markers. Acknowledging those limitations, the final prototype is robust enough to satisfy the initial requirements of the project. Future working lines may involve the addition and combination of other visual auto-location techniques such as visual odometry. Furthermore, more exhaustive position control methods could be added in order to counter the quadricopter's drift.
+	We have designed and developed an autonomous quadcopter 3D path following system which is based on a visual markers self-localization technique on indoor scenarios. We have integrated several known technologies, adapting them to our purposes. The system has been succesfully validated on simulated and real quadcopters.
 
+	Experimental results show that the system is limited in velocity due to the blurriness present in the images taken at high speed. Another key factor is the size of the markers. Taking into account such limitations and even though noisy data can affect the performance, it has proven to be stable and robust enough to follow simple 3D routes.
+
+        Future lines involve the integration of other visual auto-localization algorithms without any markers at all. Furthermore, more exhaustive position control methods could be explored in order to cope with the quadcopter's drift.
 
         \section*{Acknowledgements}
 
